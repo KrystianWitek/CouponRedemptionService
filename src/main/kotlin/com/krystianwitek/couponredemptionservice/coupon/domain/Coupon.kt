@@ -1,6 +1,7 @@
 package com.krystianwitek.couponredemptionservice.coupon.domain
 
 import java.time.Instant
+import java.util.UUID
 
 data class Coupon(
 	val id: CouponId,
@@ -17,7 +18,9 @@ data class Coupon(
 			"Current usage count must not exceed maximum usage count"
 		}
 	}
-
-	val isAvailable: Boolean
-		get() = currentUsageCount < maxUsageCount
 }
+
+@JvmInline
+value class CouponId(
+    val value: UUID,
+)
