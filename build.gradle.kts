@@ -23,6 +23,19 @@ repositories {
 	mavenCentral()
 }
 
+val integrationSourceSet = sourceSets.create("integration") {
+	kotlin {
+		compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+		runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+		srcDir("src/integration/kotlin")
+	}
+}
+
+configurations[integrationSourceSet.implementationConfigurationName]
+	.extendsFrom(configurations.testImplementation.get())
+configurations[integrationSourceSet.runtimeOnlyConfigurationName]
+	.extendsFrom(configurations.testRuntimeOnly.get())
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-flyway")
@@ -37,6 +50,8 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	"integrationImplementation"(libs.spring.boot.testcontainers)
+	"integrationImplementation"(libs.testcontainers.postgresql)
 }
 
 kotlin {
@@ -47,4 +62,16 @@ kotlin {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+val integrationTest = tasks.register<Test>("integrationTest") {
+	description = "Runs the integration tests."
+	group = "verification"
+	testClassesDirs = integrationSourceSet.output.classesDirs
+	classpath = integrationSourceSet.runtimeClasspath
+	shouldRunAfter(tasks.test)
+}
+
+tasks.check {
+	dependsOn(integrationTest)
 }
