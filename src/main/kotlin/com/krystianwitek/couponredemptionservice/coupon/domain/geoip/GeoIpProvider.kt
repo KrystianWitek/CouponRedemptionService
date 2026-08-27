@@ -6,7 +6,7 @@ interface GeoIpProvider {
     fun resolveCountry(ipAddress: String): CountryCode
 }
 
-class GeoIpResolutionException(
+class GeoIpLookupException(
     message: String,
     cause: Throwable? = null,
 ) : RuntimeException(message, cause)

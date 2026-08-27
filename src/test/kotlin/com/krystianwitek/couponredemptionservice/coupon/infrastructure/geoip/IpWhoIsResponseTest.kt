@@ -1,7 +1,7 @@
 package com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip
 
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpResolutionException
+import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -35,7 +35,7 @@ class IpWhoIsResponseTest {
         // expect
         assertThatThrownBy {
             response.toCountryCode()
-        }.isInstanceOf(GeoIpResolutionException::class.java)
+        }.isInstanceOf(GeoIpLookupException::class.java)
     }
 
     @Test
@@ -49,7 +49,7 @@ class IpWhoIsResponseTest {
         // expect
         assertThatThrownBy {
             response.toCountryCode()
-        }.isInstanceOf(GeoIpResolutionException::class.java)
+        }.isInstanceOf(GeoIpLookupException::class.java)
     }
 
     @ParameterizedTest
@@ -64,6 +64,6 @@ class IpWhoIsResponseTest {
         // expect
         assertThatThrownBy {
             response.toCountryCode()
-        }.isInstanceOf(GeoIpResolutionException::class.java)
+        }.isInstanceOf(GeoIpLookupException::class.java)
     }
 }

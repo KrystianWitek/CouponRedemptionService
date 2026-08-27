@@ -2,7 +2,7 @@ package com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip
 
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
-import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpResolutionException
+import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.annotation.JsonNaming
 import org.springframework.web.client.RestClient
@@ -14,7 +14,7 @@ internal class GeoIpProviderAdapter(
 ) : GeoIpProvider {
     override fun resolveCountry(ipAddress: String): CountryCode {
         if (ipAddress in properties.excludedAddresses) {
-            throw GeoIpResolutionException("GeoIP resolution is disabled for this address")
+            throw GeoIpLookupException("GeoIP resolution is disabled for this address")
         }
 
         return try {
@@ -27,13 +27,13 @@ internal class GeoIpProviderAdapter(
                 }
                 .retrieve()
                 .body(IpWhoIsResponse::class.java)
-                ?: throw GeoIpResolutionException("GeoIP provider returned an empty response")
+                ?: throw GeoIpLookupException("GeoIP provider returned an empty response")
 
             response.toCountryCode()
-        } catch (exception: GeoIpResolutionException) {
+        } catch (exception: GeoIpLookupException) {
             throw exception
         } catch (exception: RestClientException) {
-            throw GeoIpResolutionException("GeoIP provider request failed", exception)
+            throw GeoIpLookupException("GeoIP provider request failed", exception)
         }
     }
 
@@ -50,13 +50,13 @@ internal data class IpWhoIsResponse(
 ) {
     fun toCountryCode(): CountryCode {
         if (!success) {
-            throw GeoIpResolutionException(message ?: "GeoIP provider could not resolve the address")
+            throw GeoIpLookupException(message ?: "GeoIP provider could not resolve the address")
         }
 
         val countryCode = countryCode
             ?.trim()
             ?.takeIf { it.length == COUNTRY_CODE_LENGTH && it.all(Char::isLetter) }
-            ?: throw GeoIpResolutionException("GeoIP provider returned an invalid country code")
+            ?: throw GeoIpLookupException("GeoIP provider returned an invalid country code")
 
         return CountryCode.from(countryCode)
     }

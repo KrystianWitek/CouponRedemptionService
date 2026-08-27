@@ -11,7 +11,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
-import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpResolutionException
+import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
@@ -65,7 +65,7 @@ class GeoIpProviderAdapterTest {
         // expect
         assertThatThrownBy {
             provider.resolveCountry("127.0.0.1")
-        }.isInstanceOf(GeoIpResolutionException::class.java)
+        }.isInstanceOf(GeoIpLookupException::class.java)
         wireMock.verify(0, anyRequestedFor(anyUrl()))
     }
 
@@ -80,7 +80,7 @@ class GeoIpProviderAdapterTest {
         // expect
         assertThatThrownBy {
             provider.resolveCountry("192.0.2.1")
-        }.isInstanceOf(GeoIpResolutionException::class.java)
+        }.isInstanceOf(GeoIpLookupException::class.java)
     }
 
     @ParameterizedTest
@@ -95,7 +95,7 @@ class GeoIpProviderAdapterTest {
         // expect
         assertThatThrownBy {
             provider.resolveCountry("8.8.4.4")
-        }.isInstanceOf(GeoIpResolutionException::class.java)
+        }.isInstanceOf(GeoIpLookupException::class.java)
     }
 
     @Test
@@ -112,7 +112,7 @@ class GeoIpProviderAdapterTest {
         // expect
         assertThatThrownBy {
             createProvider(readTimeout = Duration.ofMillis(100)).resolveCountry("1.1.1.1")
-        }.isInstanceOf(GeoIpResolutionException::class.java)
+        }.isInstanceOf(GeoIpLookupException::class.java)
     }
 
     private fun createProvider(
