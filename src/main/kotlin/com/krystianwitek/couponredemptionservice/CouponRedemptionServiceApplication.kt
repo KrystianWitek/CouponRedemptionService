@@ -1,11 +1,11 @@
-package com.krystianwitek.couponservice
+package com.krystianwitek.couponredemptionservice
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class CouponServiceApplication
+class CouponRedemptionServiceApplication
 
 fun main(args: Array<String>) {
-	runApplication<CouponServiceApplication>(*args)
+	runApplication<CouponRedemptionServiceApplication>(*args)
 }
