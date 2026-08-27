@@ -1,4 +1,4 @@
-package com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip
+package com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.model
 
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
