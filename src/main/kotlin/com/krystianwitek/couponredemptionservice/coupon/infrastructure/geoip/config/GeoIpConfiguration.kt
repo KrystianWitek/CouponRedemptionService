@@ -1,21 +1,12 @@
-package com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip
+package com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.config
 
-import org.springframework.boot.context.properties.ConfigurationProperties
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.GeoIpProviderAdapter
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.properties.GeoIpProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.client.SimpleClientHttpRequestFactory
 import org.springframework.web.client.RestClient
-import java.net.URI
-import java.time.Duration
-
-@ConfigurationProperties("geo-ip")
-internal data class GeoIpProperties(
-    val baseUrl: URI,
-    val connectTimeout: Duration,
-    val readTimeout: Duration,
-    val excludedAddresses: Set<String> = emptySet(),
-)
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(GeoIpProperties::class)

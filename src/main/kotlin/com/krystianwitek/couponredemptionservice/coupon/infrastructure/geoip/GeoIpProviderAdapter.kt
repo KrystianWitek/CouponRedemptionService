@@ -3,6 +3,7 @@ package com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.properties.GeoIpProperties
 import tools.jackson.databind.PropertyNamingStrategies
 import tools.jackson.databind.annotation.JsonNaming
 import org.springframework.web.client.RestClient

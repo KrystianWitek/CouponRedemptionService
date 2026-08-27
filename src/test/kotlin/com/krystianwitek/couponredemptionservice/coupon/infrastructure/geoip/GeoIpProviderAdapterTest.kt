@@ -12,6 +12,8 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.config.GeoIpConfiguration
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.properties.GeoIpProperties
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
