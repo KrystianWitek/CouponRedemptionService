@@ -1,0 +1,10 @@
+package com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.adapter
+
+import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRedemptionRepository
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.repository.JpaCouponRedemptionRepository
+import org.springframework.stereotype.Repository
+
+@Repository
+internal class CouponRedemptionRepositoryAdapter(
+    private val jpaCouponRedemptionRepository: JpaCouponRedemptionRepository,
+) : CouponRedemptionRepository

@@ -1,0 +1,3 @@
+package com.krystianwitek.couponredemptionservice.coupon.domain.repository
+
+interface CouponRedemptionRepository
