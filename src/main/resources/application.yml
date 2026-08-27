@@ -11,9 +11,7 @@ spring:
     open-in-view: false
 
 geo-ip:
-  base-url: https://ipwho.is
-  connect-timeout: 1s
-  read-timeout: 2s
-  excluded-addresses:
-    - 127.0.0.1
-    - "::1"
+  base-url: ${GEO_IP_BASE_URL}
+  connect-timeout: ${GEO_IP_CONNECT_TIMEOUT}
+  read-timeout: ${GEO_IP_READ_TIMEOUT}
+  excluded-addresses: ${GEO_IP_EXCLUDED_ADDRESSES}
