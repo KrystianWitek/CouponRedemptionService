@@ -9,3 +9,11 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+
+geo-ip:
+  base-url: https://ipwho.is
+  connect-timeout: 1s
+  read-timeout: 2s
+  excluded-addresses:
+    - 127.0.0.1
+    - "::1"

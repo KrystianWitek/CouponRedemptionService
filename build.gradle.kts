@@ -8,6 +8,7 @@ plugins {
 
 val projectVersion = "0.0.1-SNAPSHOT"
 val javaVersion = 21
+val wireMockVersion = "3.13.2"
 
 group = "com.krystianwitek"
 version = projectVersion
@@ -35,6 +36,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+	testImplementation("org.wiremock:wiremock-standalone:$wireMockVersion")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
