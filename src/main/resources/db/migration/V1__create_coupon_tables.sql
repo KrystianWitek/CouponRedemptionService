@@ -5,7 +5,7 @@ CREATE TABLE coupon
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at          TIMESTAMP WITH TIME ZONE NOT NULL,
     max_usage_count     INTEGER                  NOT NULL,
-    current_usage_count INTEGER                  NOT NULL DEFAULT 0,
+    current_usage_count INTEGER                  NOT NULL,
     country_code        VARCHAR(2)               NOT NULL
 );
 
