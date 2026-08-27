@@ -7,7 +7,6 @@ import java.time.Instant
 import java.util.UUID
 
 @Entity
-@Table(name = "coupon_redemption")
 class CouponRedemption(
 	@Id
 	@JvmField
