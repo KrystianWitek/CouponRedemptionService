@@ -1,6 +1,5 @@
 package com.krystianwitek.couponredemptionservice.coupon.api
 
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -19,6 +18,5 @@ class CouponController {
     @PostMapping("/redeem")
     fun redeemCoupon(
         @RequestBody @Valid request: RedeemCouponRequest,
-        httpRequest: HttpServletRequest,
     ): ResponseEntity<CouponRedemptionResponse> = TODO("Needs implementation")
 }
