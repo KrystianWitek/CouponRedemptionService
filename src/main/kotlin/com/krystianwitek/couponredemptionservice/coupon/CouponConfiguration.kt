@@ -1,9 +1,9 @@
 package com.krystianwitek.couponredemptionservice.coupon
 
-import com.krystianwitek.couponredemptionservice.coupon.application.CreateCouponService
-import com.krystianwitek.couponredemptionservice.coupon.application.CreateCouponUseCase
-import com.krystianwitek.couponredemptionservice.coupon.application.RedeemCouponService
-import com.krystianwitek.couponredemptionservice.coupon.application.RedeemCouponUseCase
+import com.krystianwitek.couponredemptionservice.coupon.application.CouponCreationService
+import com.krystianwitek.couponredemptionservice.coupon.application.CouponRedemptionService
+import com.krystianwitek.couponredemptionservice.coupon.application.DefaultCouponCreationService
+import com.krystianwitek.couponredemptionservice.coupon.application.DefaultCouponRedemptionService
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRedemptionRepository
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
@@ -15,16 +15,16 @@ import org.springframework.web.client.RestClient
 @Configuration
 internal class CouponConfiguration {
     @Bean
-    fun createCouponUseCase(
+    fun couponCreationService(
         couponRepository: CouponRepository,
-    ): CreateCouponUseCase = CreateCouponService(couponRepository)
+    ): CouponCreationService = DefaultCouponCreationService(couponRepository)
 
     @Bean
-    fun redeemCouponUseCase(
+    fun couponRedemptionService(
         couponRepository: CouponRepository,
         couponRedemptionRepository: CouponRedemptionRepository,
         geoIpProvider: GeoIpProvider,
-    ): RedeemCouponUseCase = RedeemCouponService(
+    ): CouponRedemptionService = DefaultCouponRedemptionService(
         couponRepository = couponRepository,
         couponRedemptionRepository = couponRedemptionRepository,
         geoIpProvider = geoIpProvider,

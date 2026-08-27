@@ -7,7 +7,7 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvid
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRedemptionRepository
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
 
-interface RedeemCouponUseCase {
+interface CouponRedemptionService {
     fun redeem(command: RedeemCouponCommand): CouponRedemption
 }
 
@@ -17,10 +17,10 @@ data class RedeemCouponCommand(
     val ipAddress: String,
 )
 
-internal class RedeemCouponService(
+internal class DefaultCouponRedemptionService(
     private val couponRepository: CouponRepository,
     private val couponRedemptionRepository: CouponRedemptionRepository,
     private val geoIpProvider: GeoIpProvider,
-) : RedeemCouponUseCase {
+) : CouponRedemptionService {
     override fun redeem(command: RedeemCouponCommand): CouponRedemption = TODO("Needs implementation")
 }

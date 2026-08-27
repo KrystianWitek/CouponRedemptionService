@@ -5,7 +5,7 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
 
-interface CreateCouponUseCase {
+interface CouponCreationService {
     fun create(command: CreateCouponCommand): Coupon
 }
 
@@ -15,8 +15,8 @@ data class CreateCouponCommand(
     val countryCode: CountryCode,
 )
 
-internal class CreateCouponService(
+internal class DefaultCouponCreationService(
     private val couponRepository: CouponRepository,
-) : CreateCouponUseCase {
+) : CouponCreationService {
     override fun create(command: CreateCouponCommand): Coupon = TODO("Needs implementation")
 }

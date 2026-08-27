@@ -1,7 +1,7 @@
 package com.krystianwitek.couponredemptionservice.coupon.api
 
-import com.krystianwitek.couponredemptionservice.coupon.application.CreateCouponUseCase
-import com.krystianwitek.couponredemptionservice.coupon.application.RedeemCouponUseCase
+import com.krystianwitek.couponredemptionservice.coupon.application.CouponCreationService
+import com.krystianwitek.couponredemptionservice.coupon.application.CouponRedemptionService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/coupons")
 class CouponController(
-    private val createCouponUseCase: CreateCouponUseCase,
-    private val redeemCouponUseCase: RedeemCouponUseCase,
+    private val couponCreationService: CouponCreationService,
+    private val couponRedemptionService: CouponRedemptionService,
 ) {
     @PostMapping
     fun createCoupon(
