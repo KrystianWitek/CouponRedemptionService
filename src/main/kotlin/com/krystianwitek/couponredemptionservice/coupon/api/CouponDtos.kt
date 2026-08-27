@@ -8,13 +8,13 @@ import java.time.Instant
 import java.util.UUID
 
 data class CreateCouponRequest(
-    @field:NotBlank
-    @field:Size(max = 100)
+    @NotBlank
+    @Size(max = 100)
     val code: String,
-    @field:Positive
+    @Positive
     val maxUsageCount: Int,
-    @field:NotBlank
-    @field:Pattern(regexp = "[A-Za-z]{2}")
+    @NotBlank
+    @Pattern(regexp = "[A-Za-z]{2}")
     val countryCode: String,
 )
 
@@ -28,11 +28,11 @@ data class CouponResponse(
 )
 
 data class RedeemCouponRequest(
-    @field:NotBlank
-    @field:Size(max = 100)
+    @NotBlank
+    @Size(max = 100)
     val code: String,
-    @field:NotBlank
-    @field:Size(max = 255)
+    @NotBlank
+    @Size(max = 255)
     val userId: String,
 )
 
