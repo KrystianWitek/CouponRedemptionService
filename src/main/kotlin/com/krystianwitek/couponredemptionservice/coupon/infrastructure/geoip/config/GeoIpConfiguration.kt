@@ -16,10 +16,11 @@ internal class GeoIpConfiguration {
         restClientBuilder: RestClient.Builder,
         properties: GeoIpProperties,
     ): RestClient {
-        val requestFactory = SimpleClientHttpRequestFactory().apply {
-            setConnectTimeout(properties.connectTimeout)
-            setReadTimeout(properties.readTimeout)
-        }
+        val requestFactory =
+            SimpleClientHttpRequestFactory().apply {
+                setConnectTimeout(properties.connectTimeout)
+                setReadTimeout(properties.readTimeout)
+            }
 
         return restClientBuilder
             .baseUrl(properties.baseUrl)

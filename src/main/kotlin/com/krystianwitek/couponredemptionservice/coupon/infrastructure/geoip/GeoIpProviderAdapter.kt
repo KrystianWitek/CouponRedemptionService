@@ -1,8 +1,8 @@
 package com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip
 
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
+import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.model.IpWhoIsResponse
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.properties.GeoIpProperties
 import org.springframework.web.client.RestClient
@@ -18,16 +18,17 @@ internal class GeoIpProviderAdapter(
         }
 
         return try {
-            val response = restClient.get()
-                .uri { uriBuilder ->
-                    uriBuilder
-                        .pathSegment(ipAddress)
-                        .queryParam("fields", RESPONSE_FIELDS)
-                        .build()
-                }
-                .retrieve()
-                .body(IpWhoIsResponse::class.java)
-                ?: throw GeoIpLookupException("GeoIP provider returned an empty response")
+            val response =
+                restClient
+                    .get()
+                    .uri { uriBuilder ->
+                        uriBuilder
+                            .pathSegment(ipAddress)
+                            .queryParam("fields", RESPONSE_FIELDS)
+                            .build()
+                    }.retrieve()
+                    .body(IpWhoIsResponse::class.java)
+                    ?: throw GeoIpLookupException("GeoIP provider returned an empty response")
 
             response.toCountryCode()
         } catch (exception: GeoIpLookupException) {

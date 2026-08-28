@@ -10,8 +10,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.okJson
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
+import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.config.GeoIpConfiguration
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.properties.GeoIpProperties
 import org.assertj.core.api.Assertions.assertThat
@@ -108,7 +108,7 @@ class GeoIpProviderAdapterTest {
                 .willReturn(
                     okJson("""{"success":true,"country_code":"AU"}""")
                         .withFixedDelay(500),
-            ),
+                ),
         )
 
         // expect
@@ -121,12 +121,13 @@ class GeoIpProviderAdapterTest {
         readTimeout: Duration = Duration.ofSeconds(2),
         excludedAddresses: Set<String> = emptySet(),
     ): GeoIpProvider {
-        val properties = GeoIpProperties(
-            baseUrl = URI.create(wireMock.baseUrl()),
-            connectTimeout = Duration.ofSeconds(1),
-            readTimeout = readTimeout,
-            excludedAddresses = excludedAddresses,
-        )
+        val properties =
+            GeoIpProperties(
+                baseUrl = URI.create(wireMock.baseUrl()),
+                connectTimeout = Duration.ofSeconds(1),
+                readTimeout = readTimeout,
+                excludedAddresses = excludedAddresses,
+            )
         val restClient = GeoIpConfiguration().geoIpRestClient(RestClient.builder(), properties)
 
         return GeoIpProviderAdapter(restClient, properties)

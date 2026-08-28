@@ -10,19 +10,21 @@ import java.net.URI
 import java.time.Duration
 
 class GeoIpPropertiesTest {
-    private val contextRunner = ApplicationContextRunner()
-        .withInitializer(ConfigDataApplicationContextInitializer())
-        .withUserConfiguration(TestConfiguration::class.java)
+    private val contextRunner =
+        ApplicationContextRunner()
+            .withInitializer(ConfigDataApplicationContextInitializer())
+            .withUserConfiguration(TestConfiguration::class.java)
 
     @Test
     fun `should bind GeoIP properties from application yaml`() {
         // given
-        val contextRunner = contextRunner.withPropertyValues(
-            "GEO_IP_BASE_URL=https://ipwho.is",
-            "GEO_IP_CONNECT_TIMEOUT=1s",
-            "GEO_IP_READ_TIMEOUT=2s",
-            "GEO_IP_EXCLUDED_ADDRESSES=127.0.0.1,::1",
-        )
+        val contextRunner =
+            contextRunner.withPropertyValues(
+                "GEO_IP_BASE_URL=https://ipwho.is",
+                "GEO_IP_CONNECT_TIMEOUT=1s",
+                "GEO_IP_READ_TIMEOUT=2s",
+                "GEO_IP_EXCLUDED_ADDRESSES=127.0.0.1,::1",
+            )
 
         // when
         contextRunner.run { context ->
