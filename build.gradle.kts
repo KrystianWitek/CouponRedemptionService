@@ -50,6 +50,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	"integrationImplementation"("org.springframework.boot:spring-boot-starter-data-jpa-test")
 	"integrationImplementation"(libs.spring.boot.testcontainers)
 	"integrationImplementation"(libs.testcontainers.postgresql)
 }
