@@ -1,6 +1,5 @@
 package com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip
 
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.anyUrl
@@ -8,17 +7,18 @@ import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.okJson
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.config.GeoIpConfiguration
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.properties.GeoIpProperties
+import com.krystianwitek.couponredemptionservice.infrastructure.WireMockTestConfiguration
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.web.client.RestClient
@@ -26,21 +26,16 @@ import java.net.URI
 import java.time.Duration
 
 class GeoIpProviderAdapterTest {
-    private lateinit var wireMock: WireMockServer
+    @JvmField
+    @RegisterExtension
+    val wireMock: WireMockExtension = WireMockTestConfiguration.createExtension()
 
     // subject
     private lateinit var provider: GeoIpProvider
 
     @BeforeEach
     fun setup() {
-        wireMock = WireMockServer(wireMockConfig().dynamicPort())
-        wireMock.start()
         provider = createProvider()
-    }
-
-    @AfterEach
-    fun cleanup() {
-        wireMock.stop()
     }
 
     @Test
