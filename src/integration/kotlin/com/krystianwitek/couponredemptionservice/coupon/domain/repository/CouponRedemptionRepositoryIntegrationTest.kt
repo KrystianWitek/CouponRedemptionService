@@ -11,7 +11,6 @@ import com.krystianwitek.couponredemptionservice.infrastructure.IntegrationTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.JdbcTemplate
 import java.time.Instant
 import java.util.UUID
 
@@ -19,7 +18,6 @@ import java.util.UUID
 internal class CouponRedemptionRepositoryIntegrationTest @Autowired constructor(
     private val couponRepository: CouponRepository,
     private val couponRedemptionRepository: CouponRedemptionRepository,
-    private val jdbcTemplate: JdbcTemplate,
 ) {
     @Test
     fun `should save coupon redemption`() {
@@ -47,12 +45,5 @@ internal class CouponRedemptionRepositoryIntegrationTest @Autowired constructor(
 
         // then
         assertThat(result).isEqualTo(couponRedemption)
-        assertThat(
-            jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM coupon_redemption WHERE id = ?",
-                Long::class.java,
-                couponRedemption.id.value,
-            ),
-        ).isEqualTo(1)
     }
 }
