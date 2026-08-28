@@ -9,7 +9,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.okJson
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
-import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.config.GeoIpConfiguration
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.properties.GeoIpProperties
 import com.krystianwitek.couponredemptionservice.infrastructure.WithWireMock
@@ -25,11 +24,11 @@ import java.time.Duration
 
 class GeoIpProviderAdapterTest : WithWireMock {
     // subject
-    private lateinit var provider: GeoIpProvider
+    private lateinit var adapter: GeoIpProviderAdapter
 
     @BeforeEach
     fun setup() {
-        provider = createProvider()
+        adapter = createAdapter()
     }
 
     @Test
@@ -42,7 +41,7 @@ class GeoIpProviderAdapterTest : WithWireMock {
         )
 
         // when
-        val result = provider.resolveCountry("8.8.8.8")
+        val result = adapter.resolveCountry("8.8.8.8")
 
         // then
         assertThat(result).isEqualTo(CountryCode.from("US"))
@@ -51,11 +50,11 @@ class GeoIpProviderAdapterTest : WithWireMock {
     @Test
     fun `should not call provider for excluded address`() {
         // given
-        val provider = createProvider(excludedAddresses = setOf("127.0.0.1"))
+        val adapter = createAdapter(excludedAddresses = setOf("127.0.0.1"))
 
         // expect
         assertThatThrownBy {
-            provider.resolveCountry("127.0.0.1")
+            adapter.resolveCountry("127.0.0.1")
         }.isInstanceOf(GeoIpLookupException::class.java)
         wireMock.verify(0, anyRequestedFor(anyUrl()))
     }
@@ -70,7 +69,7 @@ class GeoIpProviderAdapterTest : WithWireMock {
 
         // expect
         assertThatThrownBy {
-            provider.resolveCountry("192.0.2.1")
+            adapter.resolveCountry("192.0.2.1")
         }.isInstanceOf(GeoIpLookupException::class.java)
     }
 
@@ -85,7 +84,7 @@ class GeoIpProviderAdapterTest : WithWireMock {
 
         // expect
         assertThatThrownBy {
-            provider.resolveCountry("8.8.4.4")
+            adapter.resolveCountry("8.8.4.4")
         }.isInstanceOf(GeoIpLookupException::class.java)
     }
 
@@ -102,14 +101,14 @@ class GeoIpProviderAdapterTest : WithWireMock {
 
         // expect
         assertThatThrownBy {
-            createProvider(readTimeout = Duration.ofMillis(100)).resolveCountry("1.1.1.1")
+            createAdapter(readTimeout = Duration.ofMillis(100)).resolveCountry("1.1.1.1")
         }.isInstanceOf(GeoIpLookupException::class.java)
     }
 
-    private fun createProvider(
+    private fun createAdapter(
         readTimeout: Duration = Duration.ofSeconds(2),
         excludedAddresses: Set<String> = emptySet(),
-    ): GeoIpProvider {
+    ): GeoIpProviderAdapter {
         val properties =
             GeoIpProperties(
                 baseUrl = URI.create(wireMock.baseUrl()),
