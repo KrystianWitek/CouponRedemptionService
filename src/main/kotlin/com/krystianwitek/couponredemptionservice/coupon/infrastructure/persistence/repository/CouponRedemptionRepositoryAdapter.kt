@@ -2,12 +2,12 @@ package com.krystianwitek.couponredemptionservice.coupon.infrastructure.persiste
 
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemption
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRedemptionRepository
-import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.CouponRedemption as CouponRedemptionEntity
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.mapper.toDomain
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.mapper.toEntity
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.UUID
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.CouponRedemption as CouponRedemptionEntity
 
 @Repository
 internal class CouponRedemptionRepositoryAdapter(

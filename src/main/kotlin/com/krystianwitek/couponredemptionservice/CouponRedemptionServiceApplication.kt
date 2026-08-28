@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class CouponRedemptionServiceApplication
 
 fun main(args: Array<String>) {
-	runApplication<CouponRedemptionServiceApplication>(*args)
+    runApplication<CouponRedemptionServiceApplication>(*args)
 }

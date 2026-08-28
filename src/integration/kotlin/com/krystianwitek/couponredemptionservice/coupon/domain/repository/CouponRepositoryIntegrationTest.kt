@@ -12,26 +12,29 @@ import java.time.Instant
 import java.util.UUID
 
 @IntegrationTest
-internal class CouponRepositoryIntegrationTest @Autowired constructor(
-    private val couponRepository: CouponRepository,
-) {
-    @Test
-    fun `should save and find coupon by code`() {
-        // given
-        val coupon = Coupon(
-            id = CouponId(UUID.randomUUID()),
-            code = CouponCode.from("SUMMER20"),
-            createdAt = Instant.parse("2026-08-28T10:00:00Z"),
-            maxUsageCount = 10,
-            currentUsageCount = 0,
-            country = CountryCode.from("PL"),
-        )
+internal class CouponRepositoryIntegrationTest
+    @Autowired
+    constructor(
+        private val couponRepository: CouponRepository,
+    ) {
+        @Test
+        fun `should save and find coupon by code`() {
+            // given
+            val coupon =
+                Coupon(
+                    id = CouponId(UUID.randomUUID()),
+                    code = CouponCode.from("SUMMER20"),
+                    createdAt = Instant.parse("2026-08-28T10:00:00Z"),
+                    maxUsageCount = 10,
+                    currentUsageCount = 0,
+                    country = CountryCode.from("PL"),
+                )
 
-        // when
-        couponRepository.save(coupon)
-        val result = couponRepository.findByCode(CouponCode.from("summer20"))
+            // when
+            couponRepository.save(coupon)
+            val result = couponRepository.findByCode(CouponCode.from("summer20"))
 
-        // then
-        assertThat(result).isEqualTo(coupon)
+            // then
+            assertThat(result).isEqualTo(coupon)
+        }
     }
-}

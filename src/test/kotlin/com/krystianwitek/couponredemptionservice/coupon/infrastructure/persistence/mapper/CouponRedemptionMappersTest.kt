@@ -4,22 +4,23 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemption
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemptionId
 import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
-import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.CouponRedemption as CouponRedemptionEntity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.UUID
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.CouponRedemption as CouponRedemptionEntity
 
 internal class CouponRedemptionMappersTest {
     @Test
     fun `should map domain coupon redemption to entity`() {
         // given
-        val couponRedemption = CouponRedemption(
-            id = CouponRedemptionId(ID),
-            couponId = CouponId(COUPON_ID),
-            userId = UserId.from(USER_ID),
-            redeemedAt = REDEEMED_AT,
-        )
+        val couponRedemption =
+            CouponRedemption(
+                id = CouponRedemptionId(ID),
+                couponId = CouponId(COUPON_ID),
+                userId = UserId.from(USER_ID),
+                redeemedAt = REDEEMED_AT,
+            )
 
         // when
         val result = couponRedemption.toEntity()
@@ -34,12 +35,13 @@ internal class CouponRedemptionMappersTest {
     @Test
     fun `should map coupon redemption entity to domain`() {
         // given
-        val couponRedemption = CouponRedemptionEntity(
-            id = ID,
-            couponId = COUPON_ID,
-            userId = USER_ID,
-            redeemedAt = REDEEMED_AT,
-        )
+        val couponRedemption =
+            CouponRedemptionEntity(
+                id = ID,
+                couponId = COUPON_ID,
+                userId = USER_ID,
+                redeemedAt = REDEEMED_AT,
+            )
 
         // when
         val result = couponRedemption.toDomain()
