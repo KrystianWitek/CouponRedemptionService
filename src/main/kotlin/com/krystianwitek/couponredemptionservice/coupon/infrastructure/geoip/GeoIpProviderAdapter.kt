@@ -13,30 +13,31 @@ internal class GeoIpProviderAdapter(
     private val properties: GeoIpProperties,
 ) : GeoIpProvider {
     override fun resolveCountry(ipAddress: String): CountryCode {
+        ensureLookupIsAllowed(ipAddress)
+        return fetchResponse(ipAddress).toCountryCode()
+    }
+
+    private fun ensureLookupIsAllowed(ipAddress: String) {
         if (ipAddress in properties.excludedAddresses) {
             throw GeoIpLookupException("GeoIP resolution is disabled for this address")
         }
+    }
 
-        return try {
-            val response =
-                restClient
-                    .get()
-                    .uri { uriBuilder ->
-                        uriBuilder
-                            .pathSegment(ipAddress)
-                            .queryParam("fields", RESPONSE_FIELDS)
-                            .build()
-                    }.retrieve()
-                    .body(IpWhoIsResponse::class.java)
-                    ?: throw GeoIpLookupException("GeoIP provider returned an empty response")
-
-            response.toCountryCode()
-        } catch (exception: GeoIpLookupException) {
-            throw exception
+    private fun fetchResponse(ipAddress: String): IpWhoIsResponse =
+        try {
+            restClient
+                .get()
+                .uri { uriBuilder ->
+                    uriBuilder
+                        .pathSegment(ipAddress)
+                        .queryParam("fields", RESPONSE_FIELDS)
+                        .build()
+                }.retrieve()
+                .body(IpWhoIsResponse::class.java)
+                ?: throw GeoIpLookupException("GeoIP provider returned an empty response")
         } catch (exception: RestClientException) {
             throw GeoIpLookupException("GeoIP provider request failed", exception)
         }
-    }
 
     private companion object {
         const val RESPONSE_FIELDS = "success,country_code,message"
