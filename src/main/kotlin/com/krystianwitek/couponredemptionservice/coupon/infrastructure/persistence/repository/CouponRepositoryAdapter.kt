@@ -4,7 +4,6 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
-import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.Coupon as CouponEntity
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.mapper.toDomain
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.mapper.toEntity
 import org.springframework.data.jpa.repository.JpaRepository
@@ -14,6 +13,7 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.Coupon as CouponEntity
 
 @Repository
 internal class CouponRepositoryAdapter(
@@ -24,8 +24,7 @@ internal class CouponRepositoryAdapter(
     override fun findByCode(code: CouponCode): Coupon? = jpaCouponRepository.findByCode(code.value)?.toDomain()
 
     @Transactional
-    override fun incrementUsageIfAvailable(couponId: CouponId): Boolean =
-        jpaCouponRepository.incrementUsageIfAvailable(couponId.value) == 1
+    override fun incrementUsageIfAvailable(couponId: CouponId): Boolean = jpaCouponRepository.incrementUsageIfAvailable(couponId.value) == 1
 }
 
 internal interface JpaCouponRepository : JpaRepository<CouponEntity, UUID> {

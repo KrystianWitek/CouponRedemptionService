@@ -4,10 +4,10 @@ import java.time.Instant
 import java.util.UUID
 
 data class CouponRedemption(
-	val id: CouponRedemptionId,
-	val couponId: CouponId,
-	val userId: UserId,
-	val redeemedAt: Instant,
+    val id: CouponRedemptionId,
+    val couponId: CouponId,
+    val userId: UserId,
+    val redeemedAt: Instant,
 )
 
 @JvmInline

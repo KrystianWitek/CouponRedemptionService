@@ -15,35 +15,38 @@ import java.time.Instant
 import java.util.UUID
 
 @IntegrationTest
-internal class CouponRedemptionRepositoryIntegrationTest @Autowired constructor(
-    private val couponRepository: CouponRepository,
-    private val couponRedemptionRepository: CouponRedemptionRepository,
-) {
-    @Test
-    fun `should save coupon redemption`() {
-        // given
-        val couponId = CouponId(UUID.randomUUID())
-        couponRepository.save(
-            Coupon(
-                id = couponId,
-                code = CouponCode.from("REDEMPTION20"),
-                createdAt = Instant.parse("2026-08-28T10:00:00Z"),
-                maxUsageCount = 10,
-                currentUsageCount = 0,
-                country = CountryCode.from("PL"),
-            ),
-        )
-        val couponRedemption = CouponRedemption(
-            id = CouponRedemptionId(UUID.randomUUID()),
-            couponId = couponId,
-            userId = UserId.from("user-123"),
-            redeemedAt = Instant.parse("2026-08-28T10:05:00Z"),
-        )
+internal class CouponRedemptionRepositoryIntegrationTest
+    @Autowired
+    constructor(
+        private val couponRepository: CouponRepository,
+        private val couponRedemptionRepository: CouponRedemptionRepository,
+    ) {
+        @Test
+        fun `should save coupon redemption`() {
+            // given
+            val couponId = CouponId(UUID.randomUUID())
+            couponRepository.save(
+                Coupon(
+                    id = couponId,
+                    code = CouponCode.from("REDEMPTION20"),
+                    createdAt = Instant.parse("2026-08-28T10:00:00Z"),
+                    maxUsageCount = 10,
+                    currentUsageCount = 0,
+                    country = CountryCode.from("PL"),
+                ),
+            )
+            val couponRedemption =
+                CouponRedemption(
+                    id = CouponRedemptionId(UUID.randomUUID()),
+                    couponId = couponId,
+                    userId = UserId.from("user-123"),
+                    redeemedAt = Instant.parse("2026-08-28T10:05:00Z"),
+                )
 
-        // when
-        val result = couponRedemptionRepository.save(couponRedemption)
+            // when
+            val result = couponRedemptionRepository.save(couponRedemption)
 
-        // then
-        assertThat(result).isEqualTo(couponRedemption)
+            // then
+            assertThat(result).isEqualTo(couponRedemption)
+        }
     }
-}
