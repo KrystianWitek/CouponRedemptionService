@@ -7,10 +7,8 @@ import com.krystianwitek.couponredemptionservice.coupon.application.DefaultCoupo
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRedemptionRepository
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
-import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.GeoIpProviderAdapter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.client.RestClient
 
 @Configuration
 internal class CouponConfiguration {
@@ -28,7 +26,4 @@ internal class CouponConfiguration {
             couponRedemptionRepository = couponRedemptionRepository,
             geoIpProvider = geoIpProvider,
         )
-
-    @Bean
-    fun geoIpProvider(restClientBuilder: RestClient.Builder): GeoIpProvider = GeoIpProviderAdapter(restClientBuilder)
 }
