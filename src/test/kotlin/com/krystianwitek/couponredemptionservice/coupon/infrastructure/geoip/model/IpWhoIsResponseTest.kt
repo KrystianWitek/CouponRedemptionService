@@ -5,17 +5,16 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookup
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 
 class IpWhoIsResponseTest {
     @Test
     fun `should map successful response to country code`() {
         // given
-        val response = IpWhoIsResponse(
-            success = true,
-            countryCode = "pl",
-        )
+        val response =
+            IpWhoIsResponse(
+                success = true,
+                countryCode = "pl",
+            )
 
         // when
         val result = response.toCountryCode()
@@ -27,10 +26,11 @@ class IpWhoIsResponseTest {
     @Test
     fun `should reject unsuccessful response`() {
         // given
-        val response = IpWhoIsResponse(
-            success = false,
-            message = "Reserved range",
-        )
+        val response =
+            IpWhoIsResponse(
+                success = false,
+                message = "Reserved range",
+            )
 
         // expect
         assertThatThrownBy {
@@ -41,10 +41,11 @@ class IpWhoIsResponseTest {
     @Test
     fun `should reject missing country code`() {
         // given
-        val response = IpWhoIsResponse(
-            success = true,
-            countryCode = null,
-        )
+        val response =
+            IpWhoIsResponse(
+                success = true,
+                countryCode = null,
+            )
 
         // expect
         assertThatThrownBy {
@@ -52,18 +53,20 @@ class IpWhoIsResponseTest {
         }.isInstanceOf(GeoIpLookupException::class.java)
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = ["", "P", "POL", "12"])
-    fun `should reject invalid country code`(countryCode: String) {
+    @Test
+    fun `should reject invalid country code`() {
         // given
-        val response = IpWhoIsResponse(
-            success = true,
-            countryCode = countryCode,
-        )
+        val response =
+            IpWhoIsResponse(
+                success = true,
+                countryCode = "XX",
+            )
 
         // expect
         assertThatThrownBy {
             response.toCountryCode()
         }.isInstanceOf(GeoIpLookupException::class.java)
+            .hasMessage("GeoIP provider returned an invalid country code")
+            .hasCauseInstanceOf(IllegalArgumentException::class.java)
     }
 }

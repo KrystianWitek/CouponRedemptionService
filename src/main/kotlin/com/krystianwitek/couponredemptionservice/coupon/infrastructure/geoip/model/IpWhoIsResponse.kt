@@ -12,19 +12,28 @@ internal data class IpWhoIsResponse(
     val message: String? = null,
 ) {
     fun toCountryCode(): CountryCode {
+        ensureSuccessfulResponse()
+        return parseCountryCode()
+    }
+
+    private fun ensureSuccessfulResponse() {
         if (!success) {
             throw GeoIpLookupException(message ?: "GeoIP provider could not resolve the address")
         }
-
-        val countryCode = countryCode
-            ?.trim()
-            ?.takeIf { it.length == COUNTRY_CODE_LENGTH && it.all(Char::isLetter) }
-            ?: throw GeoIpLookupException("GeoIP provider returned an invalid country code")
-
-        return CountryCode.from(countryCode)
     }
 
-    private companion object {
-        const val COUNTRY_CODE_LENGTH = 2
+    private fun parseCountryCode(): CountryCode {
+        val providerCountryCode =
+            countryCode
+                ?: throw GeoIpLookupException("GeoIP provider returned an invalid country code")
+
+        return try {
+            CountryCode.from(providerCountryCode)
+        } catch (exception: IllegalArgumentException) {
+            throw GeoIpLookupException(
+                "GeoIP provider returned an invalid country code",
+                exception,
+            )
+        }
     }
 }
