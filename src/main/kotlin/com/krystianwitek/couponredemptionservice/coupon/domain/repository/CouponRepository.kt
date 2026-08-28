@@ -1,15 +1,13 @@
 package com.krystianwitek.couponredemptionservice.coupon.domain.repository
 
-import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.Coupon
-import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.stereotype.Repository
-import java.util.UUID
+import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
+import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
+import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
 
-interface CouponRepository
+interface CouponRepository {
+    fun save(coupon: Coupon): Coupon
 
-@Repository
-internal class CouponRepositoryAdapter(
-    private val jpaCouponRepository: JpaCouponRepository,
-) : CouponRepository
+    fun findByCode(code: CouponCode): Coupon?
 
-internal interface JpaCouponRepository : JpaRepository<Coupon, UUID>
+    fun incrementUsageIfAvailable(couponId: CouponId): Boolean
+}

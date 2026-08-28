@@ -13,18 +13,17 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 internal class CouponConfiguration {
     @Bean
-    fun couponCreationService(
-        couponRepository: CouponRepository,
-    ): CouponCreationService = DefaultCouponCreationService(couponRepository)
+    fun couponCreationService(couponRepository: CouponRepository): CouponCreationService = DefaultCouponCreationService(couponRepository)
 
     @Bean
     fun couponRedemptionService(
         couponRepository: CouponRepository,
         couponRedemptionRepository: CouponRedemptionRepository,
         geoIpProvider: GeoIpProvider,
-    ): CouponRedemptionService = DefaultCouponRedemptionService(
-        couponRepository = couponRepository,
-        couponRedemptionRepository = couponRedemptionRepository,
-        geoIpProvider = geoIpProvider,
-    )
+    ): CouponRedemptionService =
+        DefaultCouponRedemptionService(
+            couponRepository = couponRepository,
+            couponRedemptionRepository = couponRedemptionRepository,
+            geoIpProvider = geoIpProvider,
+        )
 }
