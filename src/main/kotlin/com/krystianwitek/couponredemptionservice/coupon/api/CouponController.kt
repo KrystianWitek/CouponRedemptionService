@@ -3,6 +3,7 @@ package com.krystianwitek.couponredemptionservice.coupon.api
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCreationService
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponRedemptionService
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -18,7 +19,11 @@ class CouponController(
     @PostMapping
     fun createCoupon(
         @RequestBody @Valid request: CreateCouponRequest,
-    ): ResponseEntity<CouponResponse> = TODO("Needs implementation")
+    ): ResponseEntity<CouponResponse> {
+        val coupon = couponCreationService.create(request.toCommand())
+
+        return ResponseEntity.status(CREATED).body(coupon.toResponse())
+    }
 
     @PostMapping("/redeem")
     fun redeemCoupon(
