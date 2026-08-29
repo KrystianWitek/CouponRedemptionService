@@ -48,7 +48,8 @@ internal class CouponExceptionHandlerTest
         @Test
         fun `should return not found when coupon does not exist`() {
             // given
-            givenRedemptionFailsWith(CouponNotFoundException(CouponCode.from("SUMMER20")))
+            given(couponRedemptionService.redeem(REDEEM_COUPON_COMMAND))
+                .willThrow(CouponNotFoundException(CouponCode.from("SUMMER20")))
 
             // when
             val response = redeemCoupon()
@@ -65,12 +66,13 @@ internal class CouponExceptionHandlerTest
         @Test
         fun `should return forbidden when coupon country does not match`() {
             // given
-            givenRedemptionFailsWith(
-                CouponCountryMismatchException(
-                    expectedCountry = CountryCode.from("PL"),
-                    actualCountry = CountryCode.from("DE"),
-                ),
-            )
+            given(couponRedemptionService.redeem(REDEEM_COUPON_COMMAND))
+                .willThrow(
+                    CouponCountryMismatchException(
+                        expectedCountry = CountryCode.from("PL"),
+                        actualCountry = CountryCode.from("DE"),
+                    ),
+                )
 
             // when
             val response = redeemCoupon()
@@ -87,7 +89,8 @@ internal class CouponExceptionHandlerTest
         @Test
         fun `should return conflict when coupon usage limit is reached`() {
             // given
-            givenRedemptionFailsWith(CouponUsageLimitReachedException(CouponCode.from("SUMMER20")))
+            given(couponRedemptionService.redeem(REDEEM_COUPON_COMMAND))
+                .willThrow(CouponUsageLimitReachedException(CouponCode.from("SUMMER20")))
 
             // when
             val response = redeemCoupon()
@@ -104,7 +107,8 @@ internal class CouponExceptionHandlerTest
         @Test
         fun `should return service unavailable when GeoIP lookup fails`() {
             // given
-            givenRedemptionFailsWith(GeoIpLookupException("GeoIP provider request failed"))
+            given(couponRedemptionService.redeem(REDEEM_COUPON_COMMAND))
+                .willThrow(GeoIpLookupException("GeoIP provider request failed"))
 
             // when
             val response = redeemCoupon()
@@ -116,10 +120,6 @@ internal class CouponExceptionHandlerTest
                 errorCode = GEO_IP_LOOKUP_FAILED,
                 details = "GeoIP provider request failed",
             )
-        }
-
-        private fun givenRedemptionFailsWith(exception: RuntimeException) {
-            given(couponRedemptionService.redeem(REDEEM_COUPON_COMMAND)).willThrow(exception)
         }
 
         private fun redeemCoupon(): MockHttpServletResponse =
