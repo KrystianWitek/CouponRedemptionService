@@ -1,7 +1,6 @@
 package com.krystianwitek.couponredemptionservice.coupon.application
 
-import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
+import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.InMemoryCouponRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -15,12 +14,7 @@ internal class DefaultCouponCreationServiceTest {
     @Test
     fun `should create coupon`() {
         // given
-        val command =
-            CreateCouponCommand(
-                code = CouponCode.from("SUMMER20"),
-                maxUsageCount = 10,
-                countryCode = CountryCode.from("PL"),
-            )
+        val command = aCreateCouponCommand()
         val beforeCreation = Instant.now()
 
         // when
