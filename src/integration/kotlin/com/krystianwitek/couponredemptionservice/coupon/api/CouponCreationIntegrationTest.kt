@@ -1,5 +1,6 @@
 package com.krystianwitek.couponredemptionservice.coupon.api
 
+import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
 import com.krystianwitek.couponredemptionservice.infrastructure.IntegrationTest
@@ -20,12 +21,7 @@ internal class CouponCreationIntegrationTest
         @Test
         fun `should create and persist coupon`() {
             // given
-            val request =
-                CreateCouponRequest(
-                    code = "coupon-${UUID.randomUUID()}",
-                    maxUsageCount = 10,
-                    countryCode = "PL",
-                )
+            val request = aCreateCouponRequest(code = "coupon-${UUID.randomUUID()}")
 
             // when
             val response =
