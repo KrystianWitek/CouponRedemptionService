@@ -2,6 +2,7 @@ package com.krystianwitek.couponredemptionservice.coupon.api
 
 import com.krystianwitek.couponredemptionservice.coupon.aCoupon
 import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponCommand
+import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCreationService
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponRedemptionService
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
@@ -36,7 +37,7 @@ internal class CouponControllerTest
         @Test
         fun `should create coupon`() {
             // given
-            val request = CreateCouponRequest(code = " summer20 ", maxUsageCount = 10, countryCode = "pl")
+            val request = aCreateCouponRequest(code = " summer20 ", countryCode = "pl")
             val command = aCreateCouponCommand()
             val coupon =
                 aCoupon(

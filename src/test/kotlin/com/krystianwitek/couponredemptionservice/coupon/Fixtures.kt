@@ -1,5 +1,6 @@
 package com.krystianwitek.couponredemptionservice.coupon
 
+import com.krystianwitek.couponredemptionservice.coupon.api.CreateCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.application.CreateCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
@@ -7,6 +8,16 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
 import java.time.Instant
 import java.util.UUID
+
+fun aCreateCouponRequest(
+    code: String = "SUMMER20",
+    maxUsageCount: Int = 10,
+    countryCode: String = "PL",
+) = CreateCouponRequest(
+    code = code,
+    maxUsageCount = maxUsageCount,
+    countryCode = countryCode,
+)
 
 fun aCreateCouponCommand(
     code: CouponCode = CouponCode.from("SUMMER20"),
