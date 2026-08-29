@@ -14,10 +14,9 @@ import java.time.Instant
 import java.util.UUID
 
 internal class DefaultCouponRedemptionServiceTest {
-    private val requestCountry = CountryCode.from("PL")
     private val couponRepository = InMemoryCouponRepository()
     private val couponRedemptionRepository = InMemoryCouponRedemptionRepository()
-    private val geoIpProvider = FixedCountryGeoIpProvider(requestCountry)
+    private val geoIpProvider = FixedCountryGeoIpProvider(REQUEST_COUNTRY)
     private val service =
         DefaultCouponRedemptionService(
             couponRepository = couponRepository,
@@ -30,7 +29,7 @@ internal class DefaultCouponRedemptionServiceTest {
     fun `should redeem coupon`() {
         // given
         val command = aRedeemCouponCommand()
-        val coupon = couponRepository.save(aCoupon(code = command.code, country = requestCountry))
+        val coupon = couponRepository.save(aCoupon(code = command.code, country = REQUEST_COUNTRY))
         val beforeRedemption = Instant.now()
 
         // when
@@ -78,7 +77,7 @@ internal class DefaultCouponRedemptionServiceTest {
         // then
         assertThat(exception)
             .isInstanceOf(CouponCountryMismatchException::class.java)
-            .hasMessage("Coupon is not valid for country: ${requestCountry.value}")
+            .hasMessage("Coupon is not valid for country: ${REQUEST_COUNTRY.value}")
         assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isZero()
         assertThat(couponRedemptionRepository.findAll()).isEmpty()
     }
@@ -93,7 +92,7 @@ internal class DefaultCouponRedemptionServiceTest {
                     code = command.code,
                     maxUsageCount = 1,
                     currentUsageCount = 1,
-                    country = requestCountry,
+                    country = REQUEST_COUNTRY,
                 ),
             )
 
@@ -109,6 +108,10 @@ internal class DefaultCouponRedemptionServiceTest {
             .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
         assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
         assertThat(couponRedemptionRepository.findAll()).isEmpty()
+    }
+
+    private companion object {
+        val REQUEST_COUNTRY = CountryCode.from("PL")
     }
 }
 

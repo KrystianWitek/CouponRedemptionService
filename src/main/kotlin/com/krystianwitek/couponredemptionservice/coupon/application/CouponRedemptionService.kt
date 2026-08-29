@@ -62,7 +62,7 @@ internal class DefaultCouponRedemptionService(
         transactionOperations.execute {
             incrementUsage(coupon)
             saveRedemption(coupon.id, userId)
-        } ?: error("Coupon redemption transaction returned no result")
+        }
 
     private fun incrementUsage(coupon: Coupon) {
         if (!couponRepository.incrementUsageIfAvailable(coupon.id)) {
@@ -83,16 +83,3 @@ internal class DefaultCouponRedemptionService(
             ),
         )
 }
-
-class CouponNotFoundException(
-    val code: CouponCode,
-) : RuntimeException("Coupon not found: ${code.value}")
-
-class CouponCountryMismatchException(
-    val expectedCountry: CountryCode,
-    val actualCountry: CountryCode,
-) : RuntimeException("Coupon is not valid for country: ${actualCountry.value}")
-
-class CouponUsageLimitReachedException(
-    val code: CouponCode,
-) : RuntimeException("Coupon usage limit reached: ${code.value}")
