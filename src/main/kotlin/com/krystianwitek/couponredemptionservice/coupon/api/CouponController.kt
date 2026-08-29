@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -17,13 +18,10 @@ class CouponController(
     private val couponRedemptionService: CouponRedemptionService,
 ) {
     @PostMapping
+    @ResponseStatus(CREATED)
     fun createCoupon(
         @RequestBody @Valid request: CreateCouponRequest,
-    ): ResponseEntity<CouponResponse> {
-        val coupon = couponCreationService.create(request.toCommand())
-
-        return ResponseEntity.status(CREATED).body(coupon.toResponse())
-    }
+    ): CouponResponse = couponCreationService.create(request.toCommand()).toResponse()
 
     @PostMapping("/redeem")
     fun redeemCoupon(
