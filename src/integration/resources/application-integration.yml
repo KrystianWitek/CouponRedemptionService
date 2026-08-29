@@ -1,0 +1,5 @@
+geo-ip:
+  base-url: http://localhost
+  connect-timeout: 1s
+  read-timeout: 1s
+  excluded-addresses: []
