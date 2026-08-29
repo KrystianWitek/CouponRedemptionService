@@ -1,17 +1,15 @@
 package com.krystianwitek.couponredemptionservice.coupon.application
 
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
-import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.InMemoryCouponRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.UUID
 
 internal class DefaultCouponCreationServiceTest {
-    private val couponRepository = CouponRepositoryFake()
+    private val couponRepository = InMemoryCouponRepository()
     private val service = DefaultCouponCreationService(couponRepository)
 
     @Test
@@ -35,16 +33,6 @@ internal class DefaultCouponCreationServiceTest {
         assertThat(result.country).isEqualTo(command.countryCode)
         assertThat(result.id.value).isNotEqualTo(UUID(0, 0))
         assertThat(result.createdAt).isBetween(beforeCreation, Instant.now())
-        assertThat(couponRepository.savedCoupon).isSameAs(result)
-    }
-
-    private class CouponRepositoryFake : CouponRepository {
-        lateinit var savedCoupon: Coupon
-
-        override fun save(coupon: Coupon): Coupon = coupon.also { savedCoupon = it }
-
-        override fun findByCode(code: CouponCode): Coupon? = error("Not expected in this test")
-
-        override fun incrementUsageIfAvailable(couponId: CouponId): Boolean = error("Not expected in this test")
+        assertThat(couponRepository.findByCode(command.code)).isEqualTo(result)
     }
 }
