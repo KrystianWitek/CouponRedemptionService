@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.servlet.client.RestTestClient
 import org.springframework.test.web.servlet.client.expectBody
-import java.util.UUID
 
 @IntegrationTest
 internal class CouponCreationIntegrationTest
@@ -21,7 +20,7 @@ internal class CouponCreationIntegrationTest
         @Test
         fun `should create and persist coupon`() {
             // given
-            val request = aCreateCouponRequest(code = "coupon-${UUID.randomUUID()}")
+            val request = aCreateCouponRequest(code = "WELCOME10")
 
             // when
             val response =
