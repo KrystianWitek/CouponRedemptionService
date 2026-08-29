@@ -55,13 +55,17 @@ internal class CouponControllerTest
                 )
             given(couponCreationService.create(command)).willReturn(coupon)
 
-            // when & then
-            mockMvc
-                .perform(
+            // when
+            val result =
+                mockMvc.perform(
                     post("/coupons")
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)),
-                ).andExpect(status().isCreated)
+                )
+
+            // then
+            result
+                .andExpect(status().isCreated)
                 .andExpect(jsonPath("$.id").value(coupon.id.value.toString()))
                 .andExpect(jsonPath("$.code").value("SUMMER20"))
                 .andExpect(jsonPath("$.createdAt").value("2026-08-29T10:15:30Z"))
