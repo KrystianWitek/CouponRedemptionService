@@ -1,9 +1,6 @@
 package com.krystianwitek.couponredemptionservice.coupon.domain.repository
 
-import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
-import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
+import com.krystianwitek.couponredemptionservice.coupon.aCoupon
 import com.krystianwitek.couponredemptionservice.infrastructure.config.PostgresTestConfiguration
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -15,8 +12,6 @@ import org.springframework.context.annotation.Import
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
-import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -91,16 +86,4 @@ internal class CouponUsageIntegrationTest
                 executor.shutdownNow()
             }
         }
-
-        private fun aCoupon(
-            maxUsageCount: Int,
-            currentUsageCount: Int = 0,
-        ) = Coupon(
-            id = CouponId(UUID.randomUUID()),
-            code = CouponCode.from(UUID.randomUUID().toString()),
-            createdAt = Instant.now(),
-            maxUsageCount = maxUsageCount,
-            currentUsageCount = currentUsageCount,
-            country = CountryCode.from("PL"),
-        )
     }

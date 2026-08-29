@@ -1,9 +1,6 @@
 package com.krystianwitek.couponredemptionservice.coupon.domain.repository
 
-import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
-import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
+import com.krystianwitek.couponredemptionservice.coupon.aCoupon
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemption
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemptionId
 import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
@@ -24,21 +21,11 @@ internal class CouponRedemptionRepositoryIntegrationTest
         @Test
         fun `should save coupon redemption`() {
             // given
-            val couponId = CouponId(UUID.randomUUID())
-            couponRepository.save(
-                Coupon(
-                    id = couponId,
-                    code = CouponCode.from("REDEMPTION20"),
-                    createdAt = Instant.parse("2026-08-28T10:00:00Z"),
-                    maxUsageCount = 10,
-                    currentUsageCount = 0,
-                    country = CountryCode.from("PL"),
-                ),
-            )
+            val coupon = couponRepository.save(aCoupon())
             val couponRedemption =
                 CouponRedemption(
                     id = CouponRedemptionId(UUID.randomUUID()),
-                    couponId = couponId,
+                    couponId = coupon.id,
                     userId = UserId.from("user-123"),
                     redeemedAt = Instant.parse("2026-08-28T10:05:00Z"),
                 )
