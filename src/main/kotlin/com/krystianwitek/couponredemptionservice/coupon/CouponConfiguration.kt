@@ -9,6 +9,7 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.repository.Coupon
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.transaction.support.TransactionOperations
 
 @Configuration
 internal class CouponConfiguration {
@@ -20,10 +21,12 @@ internal class CouponConfiguration {
         couponRepository: CouponRepository,
         couponRedemptionRepository: CouponRedemptionRepository,
         geoIpProvider: GeoIpProvider,
+        transactionOperations: TransactionOperations,
     ): CouponRedemptionService =
         DefaultCouponRedemptionService(
             couponRepository = couponRepository,
             couponRedemptionRepository = couponRedemptionRepository,
             geoIpProvider = geoIpProvider,
+            transactionOperations = transactionOperations,
         )
 }

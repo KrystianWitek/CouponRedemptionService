@@ -2,10 +2,12 @@ package com.krystianwitek.couponredemptionservice.coupon
 
 import com.krystianwitek.couponredemptionservice.coupon.api.CreateCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.application.CreateCouponCommand
+import com.krystianwitek.couponredemptionservice.coupon.application.RedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
+import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
 import java.time.Instant
 import java.util.UUID
 
@@ -27,6 +29,16 @@ fun aCreateCouponCommand(
     code = code,
     maxUsageCount = maxUsageCount,
     countryCode = countryCode,
+)
+
+fun aRedeemCouponCommand(
+    code: CouponCode = CouponCode.from("SUMMER20"),
+    userId: UserId = UserId.from("user-123"),
+    ipAddress: String = "8.8.8.8",
+) = RedeemCouponCommand(
+    code = code,
+    userId = userId,
+    ipAddress = ipAddress,
 )
 
 fun aCoupon(
