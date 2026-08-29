@@ -1,6 +1,7 @@
 package com.krystianwitek.couponredemptionservice.coupon
 
 import com.krystianwitek.couponredemptionservice.coupon.api.CreateCouponRequest
+import com.krystianwitek.couponredemptionservice.coupon.api.RedeemCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.application.CreateCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.application.RedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
@@ -29,6 +30,14 @@ fun aCreateCouponCommand(
     code = code,
     maxUsageCount = maxUsageCount,
     countryCode = countryCode,
+)
+
+fun aRedeemCouponRequest(
+    code: String = "SUMMER20",
+    userId: String = "user-123",
+) = RedeemCouponRequest(
+    code = code,
+    userId = userId,
 )
 
 fun aRedeemCouponCommand(

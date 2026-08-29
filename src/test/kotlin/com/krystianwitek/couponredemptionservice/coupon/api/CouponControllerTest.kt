@@ -3,9 +3,13 @@ package com.krystianwitek.couponredemptionservice.coupon.api
 import com.krystianwitek.couponredemptionservice.coupon.aCoupon
 import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponRequest
+import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponCommand
+import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCreationService
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponRedemptionService
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
+import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemption
+import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemptionId
 import com.krystianwitek.couponredemptionservice.toJson
 import com.krystianwitek.couponredemptionservice.toObject
 import org.assertj.core.api.Assertions.assertThat
@@ -63,5 +67,42 @@ internal class CouponControllerTest
             assertThat(result.response.status).isEqualTo(CREATED.value())
             assertThat(response).isEqualTo(coupon.toResponse())
             then(couponCreationService).should().create(command)
+        }
+
+        @Test
+        fun `should redeem coupon`() {
+            // given
+            val request = aRedeemCouponRequest(code = " summer20 ", userId = " user-123 ")
+            val command = aRedeemCouponCommand(ipAddress = CLIENT_IP)
+            val redemption =
+                CouponRedemption(
+                    id = CouponRedemptionId(UUID.fromString("658f08b6-5f0f-4f9f-b4e4-7f68e53464ef")),
+                    couponId = CouponId(UUID.fromString("8cf42c86-170f-4bad-b287-dcdb73323a64")),
+                    userId = command.userId,
+                    redeemedAt = Instant.parse("2026-08-29T12:30:00Z"),
+                )
+            given(couponRedemptionService.redeem(command)).willReturn(redemption)
+
+            // when
+            val result =
+                mockMvc
+                    .perform(
+                        post("/coupons/redeem")
+                            .with { request ->
+                                request.remoteAddr = CLIENT_IP
+                                request
+                            }.contentType(APPLICATION_JSON)
+                            .content(request.toJson()),
+                    ).andReturn()
+            val response = result.response.contentAsString.toObject<CouponRedemptionResponse>()
+
+            // then
+            assertThat(result.response.status).isEqualTo(CREATED.value())
+            assertThat(response).isEqualTo(redemption.toResponse(command.code))
+            then(couponRedemptionService).should().redeem(command)
+        }
+
+        private companion object {
+            const val CLIENT_IP = "8.8.8.8"
         }
     }
