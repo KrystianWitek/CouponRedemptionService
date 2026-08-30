@@ -1,0 +1,9 @@
+.git
+.gradle
+.idea
+.kotlin
+gradle
+src
+*.iml
+gradlew
+gradlew.bat

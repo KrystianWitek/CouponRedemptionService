@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.jpa)
@@ -79,4 +81,8 @@ val integrationTest =
 
 tasks.check {
     dependsOn(integrationTest)
+}
+
+tasks.named<BootJar>("bootJar") {
+    archiveFileName.set("application.jar")
 }
