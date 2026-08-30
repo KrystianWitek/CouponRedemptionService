@@ -6,6 +6,7 @@ import com.krystianwitek.couponredemptionservice.infrastructure.IntegrationTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.Instant
 
 @IntegrationTest
 internal class CouponRepositoryIntegrationTest
@@ -16,7 +17,11 @@ internal class CouponRepositoryIntegrationTest
         @Test
         fun `should save and find coupon by code`() {
             // given
-            val coupon = aCoupon(code = CouponCode.from("SUMMER20"))
+            val coupon =
+                aCoupon(
+                    code = CouponCode.from("SUMMER20"),
+                    createdAt = Instant.parse("2026-01-01T12:00:00Z"),
+                )
 
             // when
             couponRepository.save(coupon)

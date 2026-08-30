@@ -5,10 +5,12 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
 import com.krystianwitek.couponredemptionservice.infrastructure.IntegrationTest
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.servlet.client.RestTestClient
 import org.springframework.test.web.servlet.client.expectBody
+import java.time.temporal.ChronoUnit.MICROS
 
 @IntegrationTest
 internal class CouponCreationIntegrationTest
@@ -42,7 +44,7 @@ internal class CouponCreationIntegrationTest
             with(coupon!!) {
                 assertThat(response.id).isEqualTo(id.value)
                 assertThat(response.code).isEqualTo(code.value)
-                assertThat(response.createdAt).isEqualTo(createdAt)
+                assertThat(response.createdAt).isCloseTo(createdAt, within(1, MICROS))
                 assertThat(response.maxUsageCount).isEqualTo(maxUsageCount)
                 assertThat(response.currentUsageCount).isEqualTo(currentUsageCount)
                 assertThat(response.countryCode).isEqualTo(country.value)
