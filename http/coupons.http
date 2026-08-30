@@ -1,0 +1,23 @@
+@baseUrl = http://localhost:8080
+@couponCode = WELCOME10
+
+### Create coupon
+
+POST {{baseUrl}}/coupons
+Content-Type: application/json
+
+{
+  "code": "{{couponCode}}",
+  "maxUsageCount": 100,
+  "countryCode": "PL"
+}
+
+### Redeem coupon
+
+POST {{baseUrl}}/coupons/redeem
+Content-Type: application/json
+
+{
+  "code": "{{couponCode}}",
+  "userId": "user-123"
+}

@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.jpa)
@@ -39,6 +41,7 @@ configurations[integrationSourceSet.runtimeOnlyConfigurationName]
     .extendsFrom(configurations.testRuntimeOnly.get())
 
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.springframework.boot:spring-boot-restclient")
@@ -79,4 +82,8 @@ val integrationTest =
 
 tasks.check {
     dependsOn(integrationTest)
+}
+
+tasks.named<BootJar>("bootJar") {
+    archiveFileName.set("application.jar")
 }

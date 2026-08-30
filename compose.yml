@@ -1,0 +1,39 @@
+services:
+  application:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/coupon_redemption_service
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      GEO_IP_BASE_URL: https://ipwho.is
+      GEO_IP_CONNECT_TIMEOUT: 2s
+      GEO_IP_READ_TIMEOUT: 2s
+      GEO_IP_EXCLUDED_ADDRESSES: "127.0.0.1,::1"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --spider http://localhost:8080/actuator/health/readiness"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: coupon_redemption_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d coupon_redemption_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:

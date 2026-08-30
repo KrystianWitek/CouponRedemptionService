@@ -1,9 +1,12 @@
 package com.krystianwitek.couponredemptionservice.coupon.api
 
 import com.krystianwitek.couponredemptionservice.coupon.application.CreateCouponCommand
+import com.krystianwitek.couponredemptionservice.coupon.application.RedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
+import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemption
+import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
 
 internal fun CreateCouponRequest.toCommand() =
     CreateCouponCommand(
@@ -20,4 +23,19 @@ internal fun Coupon.toResponse() =
         maxUsageCount = maxUsageCount,
         currentUsageCount = currentUsageCount,
         countryCode = country.value,
+    )
+
+internal fun RedeemCouponRequest.toCommand(ipAddress: String) =
+    RedeemCouponCommand(
+        code = CouponCode.from(code),
+        userId = UserId.from(userId),
+        ipAddress = ipAddress,
+    )
+
+internal fun CouponRedemption.toResponse(code: CouponCode) =
+    CouponRedemptionResponse(
+        id = id.value,
+        code = code.value,
+        userId = userId.value,
+        redeemedAt = redeemedAt,
     )
