@@ -3,10 +3,12 @@ package com.krystianwitek.couponredemptionservice.coupon.api
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode
+import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_ALREADY_REDEEMED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_COUNTRY_MISMATCH
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_NOT_FOUND
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_USAGE_LIMIT_REACHED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.GEO_IP_LOOKUP_FAILED
+import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyRedeemedException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCountryMismatchException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCreationService
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponNotFoundException
@@ -14,6 +16,7 @@ import com.krystianwitek.couponredemptionservice.coupon.application.CouponRedemp
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponUsageLimitReachedException
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
+import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
 import com.krystianwitek.couponredemptionservice.toJson
 import com.krystianwitek.couponredemptionservice.toObject
@@ -32,6 +35,7 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import java.util.UUID
 
 @WebMvcTest(CouponController::class)
 internal class CouponExceptionHandlerTest
@@ -101,6 +105,29 @@ internal class CouponExceptionHandlerTest
                 status = CONFLICT,
                 errorCode = COUPON_USAGE_LIMIT_REACHED,
                 details = "Coupon usage limit reached: SUMMER20",
+            )
+        }
+
+        @Test
+        fun `should return conflict when coupon was already redeemed by user`() {
+            // given
+            given(couponRedemptionService.redeem(REDEEM_COUPON_COMMAND))
+                .willThrow(
+                    CouponAlreadyRedeemedException(
+                        couponId = CouponId(UUID.randomUUID()),
+                        userId = REDEEM_COUPON_COMMAND.userId,
+                    ),
+                )
+
+            // when
+            val response = redeemCoupon()
+
+            // then
+            assertErrorResponse(
+                response = response,
+                status = CONFLICT,
+                errorCode = COUPON_ALREADY_REDEEMED,
+                details = "Coupon already redeemed by user: ${REDEEM_COUPON_COMMAND.userId.value}",
             )
         }
 

@@ -2,6 +2,8 @@ package com.krystianwitek.couponredemptionservice.coupon.application
 
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
+import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
+import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
 
 class CouponNotFoundException(
     val code: CouponCode,
@@ -15,3 +17,8 @@ class CouponCountryMismatchException(
 class CouponUsageLimitReachedException(
     val code: CouponCode,
 ) : RuntimeException("Coupon usage limit reached: ${code.value}")
+
+class CouponAlreadyRedeemedException(
+    val couponId: CouponId,
+    val userId: UserId,
+) : RuntimeException("Coupon already redeemed by user: ${userId.value}")

@@ -2,13 +2,14 @@ package com.krystianwitek.couponredemptionservice.coupon.infrastructure.persiste
 
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.infrastructure.config.PostgresTestConfiguration
+import com.krystianwitek.couponredemptionservice.infrastructure.persistence.TestCouponRedemptionRepository
+import com.krystianwitek.couponredemptionservice.infrastructure.persistence.TestCouponRepository
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
 import org.springframework.context.annotation.Import
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.Coupon as CouponEntity
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.CouponRedemption as CouponRedemptionEntity
@@ -65,7 +66,3 @@ internal class PersistenceConstraintsIntegrationTest
                 userId = "user-123",
             )
     }
-
-internal interface TestCouponRepository : JpaRepository<CouponEntity, UUID>
-
-internal interface TestCouponRedemptionRepository : JpaRepository<CouponRedemptionEntity, UUID>

@@ -60,8 +60,12 @@ internal class DefaultCouponRedemptionService(
         userId: UserId,
     ): CouponRedemption =
         transactionOperations.execute {
+            val couponRedemption = createRedemption(coupon.id, userId)
+
+            saveRedemption(couponRedemption)
             incrementUsage(coupon)
-            saveRedemption(coupon.id, userId)
+
+            couponRedemption
         }
 
     private fun incrementUsage(coupon: Coupon) {
@@ -70,16 +74,23 @@ internal class DefaultCouponRedemptionService(
         }
     }
 
-    private fun saveRedemption(
+    private fun createRedemption(
         couponId: CouponId,
         userId: UserId,
     ): CouponRedemption =
-        couponRedemptionRepository.save(
-            CouponRedemption(
-                id = CouponRedemptionId(UUID.randomUUID()),
-                couponId = couponId,
-                userId = userId,
-                redeemedAt = Instant.now(),
-            ),
+        CouponRedemption(
+            id = CouponRedemptionId(UUID.randomUUID()),
+            couponId = couponId,
+            userId = userId,
+            redeemedAt = Instant.now(),
         )
+
+    private fun saveRedemption(couponRedemption: CouponRedemption) {
+        if (!couponRedemptionRepository.createIfAbsent(couponRedemption)) {
+            throw CouponAlreadyRedeemedException(
+                couponId = couponRedemption.couponId,
+                userId = couponRedemption.userId,
+            )
+        }
+    }
 }
