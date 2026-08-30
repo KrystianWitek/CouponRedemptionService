@@ -1,9 +1,10 @@
+.DS_Store
+.env
+.env.*
 .git
 .gradle
 .idea
 .kotlin
-gradle
-src
+build
+out
 *.iml
-gradlew
-gradlew.bat
