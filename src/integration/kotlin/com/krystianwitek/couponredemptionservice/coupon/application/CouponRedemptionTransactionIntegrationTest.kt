@@ -6,15 +6,13 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
 import com.krystianwitek.couponredemptionservice.infrastructure.IntegrationTest
+import com.krystianwitek.couponredemptionservice.infrastructure.persistence.TestCouponRedemptionRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import java.util.UUID
-import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.CouponRedemption as CouponRedemptionEntity
 
 @IntegrationTest
 internal class CouponRedemptionTransactionIntegrationTest
@@ -22,7 +20,7 @@ internal class CouponRedemptionTransactionIntegrationTest
     constructor(
         private val couponRedemptionService: CouponRedemptionService,
         private val couponRepository: CouponRepository,
-        private val testCouponRedemptionRepository: TransactionTestCouponRedemptionRepository,
+        private val testCouponRedemptionRepository: TestCouponRedemptionRepository,
     ) {
         @MockitoBean
         private lateinit var geoIpProvider: GeoIpProvider
@@ -85,10 +83,3 @@ internal class CouponRedemptionTransactionIntegrationTest
             val COUNTRY = CountryCode.from("PL")
         }
     }
-
-internal interface TransactionTestCouponRedemptionRepository : JpaRepository<CouponRedemptionEntity, UUID> {
-    fun existsByCouponIdAndUserId(
-        couponId: UUID,
-        userId: String,
-    ): Boolean
-}
