@@ -11,7 +11,10 @@ import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import java.util.UUID
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.CouponRedemption as CouponRedemptionEntity
 
 @IntegrationTest
 internal class CouponRedemptionTransactionIntegrationTest
@@ -19,12 +22,13 @@ internal class CouponRedemptionTransactionIntegrationTest
     constructor(
         private val couponRedemptionService: CouponRedemptionService,
         private val couponRepository: CouponRepository,
+        private val testCouponRedemptionRepository: TransactionTestCouponRedemptionRepository,
     ) {
         @MockitoBean
         private lateinit var geoIpProvider: GeoIpProvider
 
         @Test
-        fun `should rollback usage increment when coupon was already redeemed by user`() {
+        fun `should not increment usage when coupon was already redeemed by user`() {
             // given
             val coupon = couponRepository.save(aCoupon(maxUsageCount = 2, country = COUNTRY))
             val command = aRedeemCouponCommand(code = coupon.code)
@@ -44,7 +48,47 @@ internal class CouponRedemptionTransactionIntegrationTest
             assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
         }
 
+        @Test
+        fun `should rollback redemption when coupon usage limit was reached`() {
+            // given
+            val coupon =
+                couponRepository.save(
+                    aCoupon(
+                        maxUsageCount = 1,
+                        currentUsageCount = 1,
+                        country = COUNTRY,
+                    ),
+                )
+            val command = aRedeemCouponCommand(code = coupon.code)
+            given(geoIpProvider.resolveCountry(command.ipAddress)).willReturn(COUNTRY)
+
+            // when
+            val exception =
+                catchThrowable {
+                    couponRedemptionService.redeem(command)
+                }
+
+            // then
+            assertThat(exception)
+                .isInstanceOf(CouponUsageLimitReachedException::class.java)
+                .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
+            assertThat(
+                testCouponRedemptionRepository.existsByCouponIdAndUserId(
+                    couponId = coupon.id.value,
+                    userId = command.userId.value,
+                ),
+            ).isFalse()
+            assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
+        }
+
         private companion object {
             val COUNTRY = CountryCode.from("PL")
         }
     }
+
+internal interface TransactionTestCouponRedemptionRepository : JpaRepository<CouponRedemptionEntity, UUID> {
+    fun existsByCouponIdAndUserId(
+        couponId: UUID,
+        userId: String,
+    ): Boolean
+}

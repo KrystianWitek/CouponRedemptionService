@@ -21,5 +21,4 @@ class CouponUsageLimitReachedException(
 class CouponAlreadyRedeemedException(
     val couponId: CouponId,
     val userId: UserId,
-    cause: Throwable,
-) : RuntimeException("Coupon already redeemed by user: ${userId.value}", cause)
+) : RuntimeException("Coupon already redeemed by user: ${userId.value}")

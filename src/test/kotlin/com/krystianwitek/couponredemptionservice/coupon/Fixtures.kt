@@ -8,6 +8,8 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
+import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemption
+import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemptionId
 import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
 import java.time.Instant
 import java.util.UUID
@@ -64,4 +66,16 @@ fun aCoupon(
     maxUsageCount = maxUsageCount,
     currentUsageCount = currentUsageCount,
     country = country,
+)
+
+fun aCouponRedemption(
+    couponId: CouponId,
+    id: CouponRedemptionId = CouponRedemptionId(UUID.randomUUID()),
+    userId: UserId = UserId.from("user-123"),
+    redeemedAt: Instant = Instant.now(),
+) = CouponRedemption(
+    id = id,
+    couponId = couponId,
+    userId = userId,
+    redeemedAt = redeemedAt,
 )

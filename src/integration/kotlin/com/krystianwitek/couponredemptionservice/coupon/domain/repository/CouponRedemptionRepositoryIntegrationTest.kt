@@ -1,14 +1,12 @@
 package com.krystianwitek.couponredemptionservice.coupon.domain.repository
 
 import com.krystianwitek.couponredemptionservice.coupon.aCoupon
-import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemption
+import com.krystianwitek.couponredemptionservice.coupon.aCouponRedemption
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponRedemptionId
-import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
 import com.krystianwitek.couponredemptionservice.infrastructure.IntegrationTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.Instant
 import java.util.UUID
 
 @IntegrationTest
@@ -19,21 +17,32 @@ internal class CouponRedemptionRepositoryIntegrationTest
         private val couponRedemptionRepository: CouponRedemptionRepository,
     ) {
         @Test
-        fun `should save coupon redemption`() {
+        fun `should create coupon redemption`() {
             // given
             val coupon = couponRepository.save(aCoupon())
-            val couponRedemption =
-                CouponRedemption(
-                    id = CouponRedemptionId(UUID.randomUUID()),
-                    couponId = coupon.id,
-                    userId = UserId.from("user-123"),
-                    redeemedAt = Instant.parse("2026-08-28T10:05:00Z"),
-                )
+            val couponRedemption = aCouponRedemption(couponId = coupon.id)
 
             // when
-            val result = couponRedemptionRepository.save(couponRedemption)
+            val result = couponRedemptionRepository.createIfAbsent(couponRedemption)
 
             // then
-            assertThat(result).isEqualTo(couponRedemption)
+            assertThat(result).isTrue()
+        }
+
+        @Test
+        fun `should not create duplicate coupon redemption`() {
+            // given
+            val coupon = couponRepository.save(aCoupon())
+            val couponRedemption = aCouponRedemption(couponId = coupon.id)
+            couponRedemptionRepository.createIfAbsent(couponRedemption)
+
+            // when
+            val result =
+                couponRedemptionRepository.createIfAbsent(
+                    couponRedemption.copy(id = CouponRedemptionId(UUID.randomUUID())),
+                )
+
+            // then
+            assertThat(result).isFalse()
         }
     }

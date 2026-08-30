@@ -7,9 +7,17 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.repository.Coupon
 internal class InMemoryCouponRedemptionRepository : CouponRedemptionRepository {
     private val redemptions = mutableMapOf<CouponRedemptionId, CouponRedemption>()
 
-    override fun save(couponRedemption: CouponRedemption): CouponRedemption {
+    override fun createIfAbsent(couponRedemption: CouponRedemption): Boolean {
+        val alreadyExists =
+            redemptions.values.any {
+                it.couponId == couponRedemption.couponId && it.userId == couponRedemption.userId
+            }
+        if (alreadyExists) {
+            return false
+        }
+
         redemptions[couponRedemption.id] = couponRedemption
-        return couponRedemption
+        return true
     }
 
     fun findAll(): List<CouponRedemption> = redemptions.values.toList()

@@ -107,7 +107,6 @@ internal class DefaultCouponRedemptionServiceTest {
             .isInstanceOf(CouponUsageLimitReachedException::class.java)
             .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
         assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
-        assertThat(couponRedemptionRepository.findAll()).isEmpty()
     }
 
     private companion object {
