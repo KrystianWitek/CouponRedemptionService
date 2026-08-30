@@ -10,6 +10,16 @@ spring:
       ddl-auto: validate
     open-in-view: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
 geo-ip:
   base-url: ${GEO_IP_BASE_URL}
   connect-timeout: ${GEO_IP_CONNECT_TIMEOUT}
