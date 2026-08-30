@@ -30,21 +30,10 @@ Add `--volumes` to remove the persisted PostgreSQL data.
 
 ## API
 
-Create a coupon:
+- `POST /coupons` creates a coupon
+- `POST /coupons/redeem` redeems a coupon
 
-```bash
-curl --request POST http://localhost:8080/coupons \
-  --header "Content-Type: application/json" \
-  --data '{"code":"WELCOME10","maxUsageCount":100,"countryCode":"PL"}'
-```
-
-Redeem a coupon:
-
-```bash
-curl --request POST http://localhost:8080/coupons/redeem \
-  --header "Content-Type: application/json" \
-  --data '{"code":"WELCOME10","userId":"user-123"}'
-```
+Runnable IntelliJ HTTP Client requests are available in [`http/coupons.http`](http/coupons.http).
 
 Coupon redemption resolves the caller's country through a public GeoIP provider. Local and private IP addresses cannot be resolved by that provider.
 
