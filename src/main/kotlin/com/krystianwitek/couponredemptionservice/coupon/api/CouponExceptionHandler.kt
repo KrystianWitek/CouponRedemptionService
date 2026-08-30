@@ -22,8 +22,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 internal class CouponExceptionHandler {
     @ExceptionHandler(CouponNotFoundException::class)
     @ResponseStatus(NOT_FOUND)
-    fun handleCouponNotFound(exception: CouponNotFoundException): ErrorResponse =
-        exception.toErrorResponse(COUPON_NOT_FOUND)
+    fun handleCouponNotFound(exception: CouponNotFoundException): ErrorResponse = exception.toErrorResponse(COUPON_NOT_FOUND)
 
     @ExceptionHandler(CouponCountryMismatchException::class)
     @ResponseStatus(FORBIDDEN)
@@ -42,8 +41,7 @@ internal class CouponExceptionHandler {
 
     @ExceptionHandler(GeoIpLookupException::class)
     @ResponseStatus(SERVICE_UNAVAILABLE)
-    fun handleGeoIpLookupFailure(exception: GeoIpLookupException): ErrorResponse =
-        exception.toErrorResponse(GEO_IP_LOOKUP_FAILED)
+    fun handleGeoIpLookupFailure(exception: GeoIpLookupException): ErrorResponse = exception.toErrorResponse(GEO_IP_LOOKUP_FAILED)
 }
 
 private fun Throwable.toErrorResponse(errorCode: ErrorResponse.ErrorCode): ErrorResponse =
