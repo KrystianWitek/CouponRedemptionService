@@ -6,6 +6,7 @@ import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorC
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_NOT_FOUND
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_USAGE_LIMIT_REACHED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.GEO_IP_LOOKUP_FAILED
+import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.INVALID_COUNTRY_CODE
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyExistsException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyRedeemedException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCountryMismatchException
@@ -13,6 +14,7 @@ import com.krystianwitek.couponredemptionservice.coupon.application.CouponNotFou
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponUsageLimitReachedException
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.NOT_FOUND
@@ -30,6 +32,13 @@ internal class CouponExceptionHandler {
     fun handleCouponAlreadyExists(exception: CouponAlreadyExistsException): ErrorResponse {
         log.debug { "Coupon request rejected. [errorCode: $COUPON_ALREADY_EXISTS, couponCode: ${exception.code.value}]" }
         return exception.toErrorResponse(COUPON_ALREADY_EXISTS)
+    }
+
+    @ExceptionHandler(InvalidCountryCodeException::class)
+    @ResponseStatus(BAD_REQUEST)
+    fun handleInvalidCountryCode(exception: InvalidCountryCodeException): ErrorResponse {
+        log.debug { "Coupon request rejected. [errorCode: $INVALID_COUNTRY_CODE, countryCode: ${exception.countryCode}]" }
+        return exception.toErrorResponse(INVALID_COUNTRY_CODE)
     }
 
     @ExceptionHandler(CouponNotFoundException::class)

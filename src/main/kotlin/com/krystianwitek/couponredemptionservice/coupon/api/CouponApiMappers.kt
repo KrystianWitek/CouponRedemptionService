@@ -12,8 +12,15 @@ internal fun CreateCouponRequest.toCommand() =
     CreateCouponCommand(
         code = CouponCode.from(code),
         maxUsageCount = maxUsageCount,
-        countryCode = CountryCode.from(countryCode),
+        countryCode = countryCode.toCountryCode(),
     )
+
+private fun String.toCountryCode(): CountryCode =
+    try {
+        CountryCode.from(this)
+    } catch (exception: IllegalArgumentException) {
+        throw InvalidCountryCodeException(this, exception)
+    }
 
 internal fun Coupon.toResponse() =
     CouponResponse(
