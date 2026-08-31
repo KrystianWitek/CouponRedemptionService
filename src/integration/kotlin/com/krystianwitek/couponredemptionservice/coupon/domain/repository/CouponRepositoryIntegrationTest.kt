@@ -35,7 +35,11 @@ internal class CouponRepositoryIntegrationTest
         @Test
         fun `should not replace coupon when code already exists`() {
             // given
-            val existingCoupon = aCoupon(code = CouponCode.from("WINTER20"))
+            val existingCoupon =
+                aCoupon(
+                    code = CouponCode.from("WINTER20"),
+                    createdAt = Instant.parse("2026-01-02T12:00:00Z"),
+                )
             val duplicateCoupon = aCoupon(code = CouponCode.from("winter20"))
             couponRepository.createIfAbsent(existingCoupon)
 
