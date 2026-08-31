@@ -41,6 +41,8 @@ configurations[integrationSourceSet.runtimeOnlyConfigurationName]
     .extendsFrom(configurations.testRuntimeOnly.get())
 
 dependencies {
+    implementation(libs.kotlin.logging)
+    implementation(libs.logbook.spring.boot.starter)
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
