@@ -7,6 +7,7 @@ import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorC
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_USAGE_LIMIT_REACHED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.GEO_IP_LOOKUP_FAILED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.INVALID_COUNTRY_CODE
+import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.VALIDATION_ERROR
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyExistsException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyRedeemedException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCountryMismatchException
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -39,6 +41,22 @@ internal class CouponExceptionHandler {
     fun handleInvalidCountryCode(exception: InvalidCountryCodeException): ErrorResponse {
         log.debug { "Coupon request rejected. [errorCode: $INVALID_COUNTRY_CODE, countryCode: ${exception.countryCode}]" }
         return exception.toErrorResponse(INVALID_COUNTRY_CODE)
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    @ResponseStatus(BAD_REQUEST)
+    fun handleValidation(exception: MethodArgumentNotValidException): ErrorResponse {
+        val invalidFields =
+            exception.bindingResult.fieldErrors
+                .map { it.field }
+                .toSortedSet()
+        log.debug { "Coupon request rejected. [errorCode: $VALIDATION_ERROR, invalidFields: $invalidFields]" }
+
+        return ErrorResponse(
+            errorCode = VALIDATION_ERROR,
+            details = VALIDATION_FAILURE_DETAILS,
+            invalidFields = invalidFields,
+        )
     }
 
     @ExceptionHandler(CouponNotFoundException::class)
@@ -86,6 +104,7 @@ internal class CouponExceptionHandler {
 
     private companion object {
         const val GEO_IP_LOOKUP_FAILURE_DETAILS = "Unable to resolve request country"
+        const val VALIDATION_FAILURE_DETAILS = "Request validation failed"
     }
 }
 
