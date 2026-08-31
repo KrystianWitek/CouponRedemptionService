@@ -11,5 +11,6 @@ data class ErrorResponse(
         COUPON_USAGE_LIMIT_REACHED,
         COUPON_ALREADY_REDEEMED,
         GEO_IP_LOOKUP_FAILED,
+        INVALID_COUNTRY_CODE,
     }
 }

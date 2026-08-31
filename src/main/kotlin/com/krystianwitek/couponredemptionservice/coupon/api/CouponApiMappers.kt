@@ -12,8 +12,15 @@ internal fun CreateCouponRequest.toCommand() =
     CreateCouponCommand(
         code = CouponCode.from(code),
         maxUsageCount = maxUsageCount,
-        countryCode = CountryCode.from(countryCode),
+        countryCode = countryCode.toCountryCode(),
     )
+
+private fun String.toCountryCode(): CountryCode =
+    try {
+        CountryCode.from(this)
+    } catch (exception: IllegalArgumentException) {
+        throw InvalidCountryCodeException(this, exception)
+    }
 
 internal fun Coupon.toResponse() =
     CouponResponse(
@@ -39,3 +46,8 @@ internal fun CouponRedemption.toResponse(code: CouponCode) =
         userId = userId.value,
         redeemedAt = redeemedAt,
     )
+
+internal class InvalidCountryCodeException(
+    val countryCode: String,
+    cause: IllegalArgumentException,
+) : RuntimeException("Unsupported country code: $countryCode", cause)

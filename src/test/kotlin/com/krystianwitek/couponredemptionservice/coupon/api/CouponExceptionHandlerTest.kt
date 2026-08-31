@@ -11,6 +11,7 @@ import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorC
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_NOT_FOUND
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_USAGE_LIMIT_REACHED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.GEO_IP_LOOKUP_FAILED
+import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.INVALID_COUNTRY_CODE
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyExistsException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyRedeemedException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCountryMismatchException
@@ -26,10 +27,13 @@ import com.krystianwitek.couponredemptionservice.toJson
 import com.krystianwitek.couponredemptionservice.toObject
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.NOT_FOUND
@@ -69,6 +73,24 @@ internal class CouponExceptionHandlerTest
                 status = CONFLICT,
                 errorCode = COUPON_ALREADY_EXISTS,
                 details = "Coupon already exists: ${command.code.value}",
+            )
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = ["XX", "UK"])
+        fun `should return bad request when country code is not supported`(countryCode: String) {
+            // given
+            val request = aCreateCouponRequest(countryCode = countryCode)
+
+            // when
+            val response = createCoupon(request)
+
+            // then
+            assertErrorResponse(
+                response = response,
+                status = BAD_REQUEST,
+                errorCode = INVALID_COUNTRY_CODE,
+                details = "Unsupported country code: $countryCode",
             )
         }
 
@@ -184,12 +206,12 @@ internal class CouponExceptionHandlerTest
                 ).andReturn()
                 .response
 
-        private fun createCoupon(): MockHttpServletResponse =
+        private fun createCoupon(request: CreateCouponRequest = aCreateCouponRequest()): MockHttpServletResponse =
             mockMvc
                 .perform(
                     post("/coupons")
                         .contentType(APPLICATION_JSON)
-                        .content(aCreateCouponRequest().toJson()),
+                        .content(request.toJson()),
                 ).andReturn()
                 .response
 
