@@ -46,8 +46,3 @@ internal fun CouponRedemption.toResponse(code: CouponCode) =
         userId = userId.value,
         redeemedAt = redeemedAt,
     )
-
-internal class InvalidCountryCodeException(
-    val countryCode: String,
-    cause: IllegalArgumentException,
-) : RuntimeException("Unsupported country code: $countryCode", cause)
