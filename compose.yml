@@ -7,6 +7,7 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres:5432/coupon_redemption_service
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: postgres
+      SPRING_PROFILES_ACTIVE: local
       GEO_IP_BASE_URL: https://ipwho.is
       GEO_IP_CONNECT_TIMEOUT: 2s
       GEO_IP_READ_TIMEOUT: 2s

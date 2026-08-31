@@ -25,3 +25,8 @@ geo-ip:
   connect-timeout: ${GEO_IP_CONNECT_TIMEOUT}
   read-timeout: ${GEO_IP_READ_TIMEOUT}
   excluded-addresses: ${GEO_IP_EXCLUDED_ADDRESSES}
+
+logbook:
+  predicate:
+    exclude:
+      - path: /actuator/**
