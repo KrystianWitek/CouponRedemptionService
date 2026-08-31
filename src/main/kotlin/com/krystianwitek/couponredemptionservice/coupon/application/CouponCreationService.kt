@@ -5,6 +5,7 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.util.UUID
 
@@ -21,13 +22,17 @@ data class CreateCouponCommand(
 internal class DefaultCouponCreationService(
     private val couponRepository: CouponRepository,
 ) : CouponCreationService {
+    private val log = KotlinLogging.logger {}
+
     override fun create(command: CreateCouponCommand): Coupon {
+        log.debug { "Creating coupon started. [couponCode: ${command.code.value}]" }
         val coupon = command.toCoupon()
 
         if (!couponRepository.createIfAbsent(coupon)) {
             throw CouponAlreadyExistsException(coupon.code)
         }
 
+        log.debug { "Creating coupon finished. [couponId: ${coupon.id.value}]" }
         return coupon
     }
 

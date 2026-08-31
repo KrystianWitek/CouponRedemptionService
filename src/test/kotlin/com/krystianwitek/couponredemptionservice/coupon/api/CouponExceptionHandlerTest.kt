@@ -168,7 +168,7 @@ internal class CouponExceptionHandlerTest
                 response = response,
                 status = SERVICE_UNAVAILABLE,
                 errorCode = GEO_IP_LOOKUP_FAILED,
-                details = "GeoIP provider request failed",
+                details = "Unable to resolve request country",
             )
         }
 

@@ -10,6 +10,7 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRedemptionRepository
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.support.TransactionOperations
 import java.time.Instant
 import java.util.UUID
@@ -30,13 +31,19 @@ internal class DefaultCouponRedemptionService(
     private val geoIpProvider: GeoIpProvider,
     private val transactionOperations: TransactionOperations,
 ) : CouponRedemptionService {
+    private val log = KotlinLogging.logger {}
+
     override fun redeem(command: RedeemCouponCommand): CouponRedemption {
+        log.debug { "Redeeming coupon started. [couponCode: ${command.code.value}]" }
         val coupon = findCoupon(command.code)
         val requestCountry = geoIpProvider.resolveCountry(command.ipAddress)
 
         validateCountry(coupon.country, requestCountry)
 
-        return redeemInTransaction(coupon, command.userId)
+        val couponRedemption = redeemInTransaction(coupon, command.userId)
+        log.debug { "Redeeming coupon finished. [couponRedemptionId: ${couponRedemption.id.value}]" }
+
+        return couponRedemption
     }
 
     private fun findCoupon(code: CouponCode): Coupon =
