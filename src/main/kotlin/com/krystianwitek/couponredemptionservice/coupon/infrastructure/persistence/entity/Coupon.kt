@@ -2,7 +2,6 @@ package com.krystianwitek.couponredemptionservice.coupon.infrastructure.persiste
 
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
-import jakarta.persistence.PreUpdate
 import java.time.Instant
 import java.util.UUID
 
@@ -13,13 +12,8 @@ class Coupon(
     final val id: UUID = UUID.randomUUID(),
     val code: String,
     val createdAt: Instant = Instant.now(),
-    var updatedAt: Instant = createdAt,
+    val updatedAt: Instant = createdAt,
     val maxUsageCount: Int,
     var currentUsageCount: Int = 0,
     val countryCode: String,
-) {
-    @PreUpdate
-    fun setUpdatedAt() {
-        updatedAt = Instant.now()
-    }
-}
+)
