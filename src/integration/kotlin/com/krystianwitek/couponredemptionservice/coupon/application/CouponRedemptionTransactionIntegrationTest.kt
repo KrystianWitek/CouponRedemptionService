@@ -28,7 +28,8 @@ internal class CouponRedemptionTransactionIntegrationTest
         @Test
         fun `should not increment usage when coupon was already redeemed by user`() {
             // given
-            val coupon = couponRepository.save(aCoupon(maxUsageCount = 2, country = COUNTRY))
+            val coupon = aCoupon(maxUsageCount = 2, country = COUNTRY)
+            couponRepository.createIfAbsent(coupon)
             val command = aRedeemCouponCommand(code = coupon.code)
             given(geoIpProvider.resolveCountry(command.ipAddress)).willReturn(COUNTRY)
             couponRedemptionService.redeem(command)
@@ -50,13 +51,12 @@ internal class CouponRedemptionTransactionIntegrationTest
         fun `should rollback redemption when coupon usage limit was reached`() {
             // given
             val coupon =
-                couponRepository.save(
-                    aCoupon(
-                        maxUsageCount = 1,
-                        currentUsageCount = 1,
-                        country = COUNTRY,
-                    ),
+                aCoupon(
+                    maxUsageCount = 1,
+                    currentUsageCount = 1,
+                    country = COUNTRY,
                 )
+            couponRepository.createIfAbsent(coupon)
             val command = aRedeemCouponCommand(code = coupon.code)
             given(geoIpProvider.resolveCountry(command.ipAddress)).willReturn(COUNTRY)
 

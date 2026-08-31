@@ -6,16 +6,6 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.persistence.entity.Coupon as CouponEntity
 
-internal fun Coupon.toEntity() =
-    CouponEntity(
-        id = id.value,
-        code = code.value,
-        createdAt = createdAt,
-        maxUsageCount = maxUsageCount,
-        currentUsageCount = currentUsageCount,
-        countryCode = country.value,
-    )
-
 internal fun CouponEntity.toDomain() =
     Coupon(
         id = CouponId(id),

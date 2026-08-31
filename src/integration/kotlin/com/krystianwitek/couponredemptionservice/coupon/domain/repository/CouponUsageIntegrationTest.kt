@@ -34,7 +34,8 @@ internal class CouponUsageIntegrationTest
         @Test
         fun `should increment coupon usage when limit is not reached`() {
             // given
-            val coupon = couponRepository.save(aCoupon(maxUsageCount = 2))
+            val coupon = aCoupon(maxUsageCount = 2)
+            couponRepository.createIfAbsent(coupon)
 
             // when
             val incremented = couponRepository.incrementUsageIfAvailable(coupon.id)
@@ -47,7 +48,8 @@ internal class CouponUsageIntegrationTest
         @Test
         fun `should not increment coupon usage when limit is reached`() {
             // given
-            val coupon = couponRepository.save(aCoupon(maxUsageCount = 1, currentUsageCount = 1))
+            val coupon = aCoupon(maxUsageCount = 1, currentUsageCount = 1)
+            couponRepository.createIfAbsent(coupon)
 
             // when
             val incremented = couponRepository.incrementUsageIfAvailable(coupon.id)
@@ -62,7 +64,8 @@ internal class CouponUsageIntegrationTest
             // given
             val usageLimit = 5
             val attempts = 20
-            val coupon = couponRepository.save(aCoupon(maxUsageCount = usageLimit))
+            val coupon = aCoupon(maxUsageCount = usageLimit)
+            couponRepository.createIfAbsent(coupon)
             val start = CountDownLatch(1)
             val executor = Executors.newFixedThreadPool(attempts)
 

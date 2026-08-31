@@ -29,7 +29,8 @@ internal class DefaultCouponRedemptionServiceTest {
     fun `should redeem coupon`() {
         // given
         val command = aRedeemCouponCommand()
-        val coupon = couponRepository.save(aCoupon(code = command.code, country = REQUEST_COUNTRY))
+        val coupon = aCoupon(code = command.code, country = REQUEST_COUNTRY)
+        couponRepository.createIfAbsent(coupon)
         val beforeRedemption = Instant.now()
 
         // when
@@ -66,7 +67,8 @@ internal class DefaultCouponRedemptionServiceTest {
     fun `should reject redemption when country does not match`() {
         // given
         val command = aRedeemCouponCommand()
-        val coupon = couponRepository.save(aCoupon(code = command.code, country = CountryCode.from("DE")))
+        val coupon = aCoupon(code = command.code, country = CountryCode.from("DE"))
+        couponRepository.createIfAbsent(coupon)
 
         // when
         val exception =
@@ -87,14 +89,13 @@ internal class DefaultCouponRedemptionServiceTest {
         // given
         val command = aRedeemCouponCommand()
         val coupon =
-            couponRepository.save(
-                aCoupon(
-                    code = command.code,
-                    maxUsageCount = 1,
-                    currentUsageCount = 1,
-                    country = REQUEST_COUNTRY,
-                ),
+            aCoupon(
+                code = command.code,
+                maxUsageCount = 1,
+                currentUsageCount = 1,
+                country = REQUEST_COUNTRY,
             )
+        couponRepository.createIfAbsent(coupon)
 
         // when
         val exception =

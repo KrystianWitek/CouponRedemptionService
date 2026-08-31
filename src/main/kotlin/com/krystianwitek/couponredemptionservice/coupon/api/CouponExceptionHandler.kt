@@ -1,10 +1,12 @@
 package com.krystianwitek.couponredemptionservice.coupon.api
 
+import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_ALREADY_EXISTS
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_ALREADY_REDEEMED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_COUNTRY_MISMATCH
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_NOT_FOUND
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_USAGE_LIMIT_REACHED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.GEO_IP_LOOKUP_FAILED
+import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyExistsException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyRedeemedException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCountryMismatchException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponNotFoundException
@@ -20,6 +22,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice(assignableTypes = [CouponController::class])
 internal class CouponExceptionHandler {
+    @ExceptionHandler(CouponAlreadyExistsException::class)
+    @ResponseStatus(CONFLICT)
+    fun handleCouponAlreadyExists(exception: CouponAlreadyExistsException): ErrorResponse = exception.toErrorResponse(COUPON_ALREADY_EXISTS)
+
     @ExceptionHandler(CouponNotFoundException::class)
     @ResponseStatus(NOT_FOUND)
     fun handleCouponNotFound(exception: CouponNotFoundException): ErrorResponse = exception.toErrorResponse(COUPON_NOT_FOUND)

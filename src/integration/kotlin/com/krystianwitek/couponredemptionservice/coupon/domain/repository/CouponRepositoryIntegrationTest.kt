@@ -15,7 +15,7 @@ internal class CouponRepositoryIntegrationTest
         private val couponRepository: CouponRepository,
     ) {
         @Test
-        fun `should save and find coupon by code`() {
+        fun `should create and find coupon by code`() {
             // given
             val coupon =
                 aCoupon(
@@ -24,10 +24,30 @@ internal class CouponRepositoryIntegrationTest
                 )
 
             // when
-            couponRepository.save(coupon)
+            val created = couponRepository.createIfAbsent(coupon)
             val result = couponRepository.findByCode(CouponCode.from("summer20"))
 
             // then
+            assertThat(created).isTrue()
             assertThat(result).isEqualTo(coupon)
+        }
+
+        @Test
+        fun `should not replace coupon when code already exists`() {
+            // given
+            val existingCoupon =
+                aCoupon(
+                    code = CouponCode.from("WINTER20"),
+                    createdAt = Instant.parse("2026-01-02T12:00:00Z"),
+                )
+            val duplicateCoupon = aCoupon(code = CouponCode.from("winter20"))
+            couponRepository.createIfAbsent(existingCoupon)
+
+            // when
+            val created = couponRepository.createIfAbsent(duplicateCoupon)
+
+            // then
+            assertThat(created).isFalse()
+            assertThat(couponRepository.findByCode(existingCoupon.code)).isEqualTo(existingCoupon)
         }
     }

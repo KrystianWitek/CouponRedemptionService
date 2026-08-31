@@ -22,7 +22,8 @@ internal class CouponRedemptionRepositoryIntegrationTest
         @Test
         fun `should create coupon redemption`() {
             // given
-            val coupon = couponRepository.save(aCoupon())
+            val coupon = aCoupon()
+            couponRepository.createIfAbsent(coupon)
             val couponRedemption =
                 aCouponRedemption(
                     couponId = coupon.id,
@@ -44,7 +45,8 @@ internal class CouponRedemptionRepositoryIntegrationTest
         @Test
         fun `should not create duplicate coupon redemption`() {
             // given
-            val coupon = couponRepository.save(aCoupon())
+            val coupon = aCoupon()
+            couponRepository.createIfAbsent(coupon)
             val couponRedemption = aCouponRedemption(couponId = coupon.id)
             couponRedemptionRepository.createIfAbsent(couponRedemption)
 

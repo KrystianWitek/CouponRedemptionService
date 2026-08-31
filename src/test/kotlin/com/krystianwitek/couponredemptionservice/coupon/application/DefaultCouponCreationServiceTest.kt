@@ -3,6 +3,7 @@ package com.krystianwitek.couponredemptionservice.coupon.application
 import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.InMemoryCouponRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.UUID
@@ -28,5 +29,21 @@ internal class DefaultCouponCreationServiceTest {
         assertThat(result.id.value).isNotEqualTo(UUID(0, 0))
         assertThat(result.createdAt).isBetween(beforeCreation, Instant.now())
         assertThat(couponRepository.findByCode(command.code)).isEqualTo(result)
+    }
+
+    @Test
+    fun `should reject duplicate coupon`() {
+        // given
+        val command = aCreateCouponCommand()
+        val createdCoupon = service.create(command)
+
+        // when
+        val exception = catchThrowable { service.create(command) }
+
+        // then
+        assertThat(exception)
+            .isInstanceOf(CouponAlreadyExistsException::class.java)
+            .hasMessage("Coupon already exists: ${command.code.value}")
+        assertThat(couponRepository.findByCode(command.code)).isEqualTo(createdCoupon)
     }
 }

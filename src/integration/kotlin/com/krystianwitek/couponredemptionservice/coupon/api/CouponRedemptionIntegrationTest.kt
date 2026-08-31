@@ -30,12 +30,11 @@ internal class CouponRedemptionIntegrationTest
         fun `should redeem coupon and persist updated usage`() {
             // given
             val coupon =
-                couponRepository.save(
-                    aCoupon(
-                        code = CouponCode.from("REDEEM10"),
-                        country = CountryCode.from("PL"),
-                    ),
+                aCoupon(
+                    code = CouponCode.from("REDEEM10"),
+                    country = CountryCode.from("PL"),
                 )
+            couponRepository.createIfAbsent(coupon)
             val request = aRedeemCouponRequest(code = coupon.code.value)
             given(geoIpProvider.resolveCountry(anyString())).willReturn(coupon.country)
 
