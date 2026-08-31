@@ -8,9 +8,13 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.repository.Coupon
 internal class InMemoryCouponRepository : CouponRepository {
     private val coupons = mutableMapOf<CouponId, Coupon>()
 
-    override fun save(coupon: Coupon): Coupon {
+    override fun createIfAbsent(coupon: Coupon): Boolean {
+        if (findByCode(coupon.code) != null) {
+            return false
+        }
+
         coupons[coupon.id] = coupon
-        return coupon
+        return true
     }
 
     override fun findByCode(code: CouponCode): Coupon? = coupons.values.firstOrNull { it.code == code }

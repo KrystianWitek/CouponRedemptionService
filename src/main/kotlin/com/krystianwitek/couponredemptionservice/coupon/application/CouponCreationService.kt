@@ -21,7 +21,15 @@ data class CreateCouponCommand(
 internal class DefaultCouponCreationService(
     private val couponRepository: CouponRepository,
 ) : CouponCreationService {
-    override fun create(command: CreateCouponCommand): Coupon = couponRepository.save(command.toCoupon())
+    override fun create(command: CreateCouponCommand): Coupon {
+        val coupon = command.toCoupon()
+
+        if (!couponRepository.createIfAbsent(coupon)) {
+            throw CouponAlreadyExistsException(coupon.code)
+        }
+
+        return coupon
+    }
 
     private fun CreateCouponCommand.toCoupon() =
         Coupon(

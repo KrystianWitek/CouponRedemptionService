@@ -1,13 +1,17 @@
 package com.krystianwitek.couponredemptionservice.coupon.api
 
+import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponCommand
+import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode
+import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_ALREADY_EXISTS
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_ALREADY_REDEEMED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_COUNTRY_MISMATCH
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_NOT_FOUND
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_USAGE_LIMIT_REACHED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.GEO_IP_LOOKUP_FAILED
+import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyExistsException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyRedeemedException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCountryMismatchException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCreationService
@@ -48,6 +52,25 @@ internal class CouponExceptionHandlerTest
 
         @MockitoBean
         private lateinit var couponRedemptionService: CouponRedemptionService
+
+        @Test
+        fun `should return conflict when coupon already exists`() {
+            // given
+            val command = aCreateCouponCommand()
+            given(couponCreationService.create(command))
+                .willThrow(CouponAlreadyExistsException(command.code))
+
+            // when
+            val response = createCoupon()
+
+            // then
+            assertErrorResponse(
+                response = response,
+                status = CONFLICT,
+                errorCode = COUPON_ALREADY_EXISTS,
+                details = "Coupon already exists: ${command.code.value}",
+            )
+        }
 
         @Test
         fun `should return not found when coupon does not exist`() {
@@ -158,6 +181,15 @@ internal class CouponExceptionHandlerTest
                             request
                         }.contentType(APPLICATION_JSON)
                         .content(aRedeemCouponRequest().toJson()),
+                ).andReturn()
+                .response
+
+        private fun createCoupon(): MockHttpServletResponse =
+            mockMvc
+                .perform(
+                    post("/coupons")
+                        .contentType(APPLICATION_JSON)
+                        .content(aCreateCouponRequest().toJson()),
                 ).andReturn()
                 .response
 

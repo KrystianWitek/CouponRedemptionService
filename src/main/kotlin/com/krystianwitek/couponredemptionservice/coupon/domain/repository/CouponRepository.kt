@@ -5,7 +5,7 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId
 
 interface CouponRepository {
-    fun save(coupon: Coupon): Coupon
+    fun createIfAbsent(coupon: Coupon): Boolean
 
     fun findByCode(code: CouponCode): Coupon?
 

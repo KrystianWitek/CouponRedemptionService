@@ -40,7 +40,8 @@ internal class CouponRedemptionConcurrencyIntegrationTest
         @Test
         fun `should redeem coupon exactly once when the same user sends concurrent requests`() {
             // given
-            val coupon = couponRepository.save(aCoupon(maxUsageCount = ATTEMPTS, country = COUNTRY))
+            val coupon = aCoupon(maxUsageCount = ATTEMPTS, country = COUNTRY)
+            couponRepository.createIfAbsent(coupon)
             val command = aRedeemCouponCommand(code = coupon.code)
 
             // when
@@ -65,7 +66,8 @@ internal class CouponRedemptionConcurrencyIntegrationTest
         fun `should not exceed usage limit and should roll back losing redemptions under concurrent requests`() {
             // given
             val usageLimit = 5
-            val coupon = couponRepository.save(aCoupon(maxUsageCount = usageLimit, country = COUNTRY))
+            val coupon = aCoupon(maxUsageCount = usageLimit, country = COUNTRY)
+            couponRepository.createIfAbsent(coupon)
             val commands = List(ATTEMPTS) { aRedeemCouponCommand(code = coupon.code, userId = UserId.from("user-$it")) }
 
             // when
