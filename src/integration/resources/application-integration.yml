@@ -3,11 +3,6 @@ spring:
     hikari:
       maximum-pool-size: 25
 
-management:
-  endpoint:
-    health:
-      show-components: always
-
 geo-ip:
   base-url: http://localhost
   connect-timeout: 1s
