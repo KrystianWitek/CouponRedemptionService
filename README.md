@@ -33,7 +33,26 @@ Stop the application:
 docker compose down
 ```
 
-Add `--volumes` to remove the persisted PostgreSQL data.
+Add `--volumes` to remove the persisted PostgreSQL data and the collected metric history.
+
+## Local observability
+
+`docker compose up` also starts a local monitoring stack defined in
+[`compose.override.yml`](compose.override.yml); run `docker compose -f compose.yml up --build` to
+start the application without it. The stack is bound to the loopback interface and is meant for
+local development only:
+
+- Prometheus: `http://localhost:9090` — scrapes `application:8080/actuator/prometheus` every
+  5 seconds and keeps 1 day of history.
+- Grafana: `http://localhost:3000` — anonymous viewer access; sign in as `admin`/`admin` to use
+  Explore or edit anything. The Prometheus data source is provisioned automatically.
+
+Available metrics include HTTP server requests, Tomcat threads, the Hikari connection pool, and
+JVM CPU/memory usage.
+
+The `prometheus` actuator endpoint is enabled only through an environment override in
+`compose.override.yml`; the base configuration exposes just `health`. A production deployment
+would restrict the metrics endpoint to monitoring infrastructure instead of exposing it publicly.
 
 ## API
 
