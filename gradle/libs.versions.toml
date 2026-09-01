@@ -11,6 +11,7 @@ wiremock = "3.13.2"
 [libraries]
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
 logbook-spring-boot-starter = { module = "org.zalando:logbook-spring-boot-starter", version.ref = "logbook" }
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 wiremock-standalone = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
