@@ -43,6 +43,11 @@ under `/api/v2` without breaking existing clients:
 - `POST /api/v1/coupons` — create a coupon
 - `POST /api/v1/coupons/redeem` — record a coupon redemption for a user
 
+Interactive OpenAPI documentation is available while the application is running:
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI specification: `http://localhost:8080/v3/api-docs`
+
 Runnable IntelliJ HTTP Client requests are available in [`http/coupons.http`](http/coupons.http).
 
 Coupon redemption resolves the caller's country through a public GeoIP provider. Local and private IP addresses cannot be resolved by that provider, so redemption requests made through localhost are expected to fail GeoIP resolution.

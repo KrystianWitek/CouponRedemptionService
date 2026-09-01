@@ -35,3 +35,7 @@ logbook:
   predicate:
     exclude:
       - path: /actuator/**
+      - path: /swagger-ui.html
+      - path: /swagger-ui/**
+      - path: /v3/api-docs
+      - path: /v3/api-docs/**
