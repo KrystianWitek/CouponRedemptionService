@@ -45,10 +45,15 @@ local development only:
 - Prometheus: `http://localhost:9090` — scrapes `application:8080/actuator/prometheus` every
   5 seconds and keeps 1 day of history.
 - Grafana: `http://localhost:3000` — anonymous viewer access; sign in as `admin`/`admin` to use
-  Explore or edit anything. The Prometheus data source is provisioned automatically.
+  Explore or edit anything. The Prometheus data source and the **Coupon Redemption Service**
+  dashboard are provisioned automatically.
 
-Available metrics include HTTP server requests, Tomcat threads, the Hikari connection pool, and
-JVM CPU/memory usage.
+The dashboard has two rows:
+
+- **HTTP** — request rate, p95/p99 latency (from Micrometer histogram buckets), and response rate
+  grouped by status code, all for the whole application.
+- **Runtime** — Tomcat thread pool (busy/current/max), Hikari connections (active/pending/max),
+  process CPU usage, and JVM heap (used/max).
 
 The `prometheus` actuator endpoint is enabled only through an environment override in
 `compose.override.yml`; the base configuration exposes just `health`. A production deployment
