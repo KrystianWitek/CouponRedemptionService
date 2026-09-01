@@ -50,8 +50,8 @@ local development only:
 
 The dashboard has two rows:
 
-- **HTTP** — request rate, p95/p99 latency (from Micrometer histogram buckets), and response rate
-  grouped by status code, all for the whole application.
+- **HTTP** — request rate, p50/p95/p99 latency (from Micrometer histogram buckets), and response
+  rate grouped by status code, all for the whole application.
 - **Runtime** — Tomcat thread pool (busy/current/max), Hikari connections (active/pending/max),
   process CPU usage, and JVM heap (used/max).
 
