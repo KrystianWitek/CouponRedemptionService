@@ -28,7 +28,7 @@ internal class CouponCreationIntegrationTest
             val response =
                 restTestClient
                     .post()
-                    .uri("/coupons")
+                    .uri("/api/v1/coupons")
                     .body(request)
                     .exchange()
                     .expectStatus()

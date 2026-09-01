@@ -42,7 +42,7 @@ internal class CouponRedemptionIntegrationTest
             val response =
                 restTestClient
                     .post()
-                    .uri("/coupons/redeem")
+                    .uri("/api/v1/coupons/redeem")
                     .body(request)
                     .exchange()
                     .expectStatus()

@@ -57,7 +57,7 @@ internal class CouponControllerTest
             val result =
                 mockMvc
                     .perform(
-                        post("/coupons")
+                        post("/api/v1/coupons")
                             .contentType(APPLICATION_JSON)
                             .content(request.toJson()),
                     ).andReturn()
@@ -87,7 +87,7 @@ internal class CouponControllerTest
             val result =
                 mockMvc
                     .perform(
-                        post("/coupons/redeem")
+                        post("/api/v1/coupons/redeem")
                             .with { request ->
                                 request.remoteAddr = CLIENT_IP
                                 request
