@@ -1,0 +1,67 @@
+name: coupon-perf
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: coupon_redemption_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d coupon_redemption_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1g
+
+  wiremock:
+    image: wiremock/wiremock:3.9.1
+    # The default ~10 container threads cap the stub at ~500 rps with the 20 ms delay —
+    # the stub would throttle the test instead of the application. The request journal
+    # is disabled because it accumulates hundreds of thousands of requests in memory.
+    command: ["--no-request-journal", "--container-threads", "500"]
+    volumes:
+      - ./wiremock:/home/wiremock:ro
+    ports:
+      - "127.0.0.1:8081:8080"
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      # High, localhost-only host ports so the perf stack can run next to the dev
+      # compose stack (8080 app, 9090 prometheus, 3000 grafana); k6 connects inside
+      # the compose network via app:8080 anyway.
+      - "127.0.0.1:18080:8080"
+      - "127.0.0.1:19090:9090"
+    environment:
+      SPRING_PROFILES_ACTIVE: perf
+      DATABASE_URL: jdbc:postgresql://postgres:5432/coupon_redemption_service
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      GEO_IP_BASE_URL: http://wiremock:8080
+      GEO_IP_CONNECT_TIMEOUT: 2s
+      GEO_IP_READ_TIMEOUT: 2s
+      GEO_IP_EXCLUDED_ADDRESSES: "203.0.113.99"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      wiremock:
+        condition: service_started
+    healthcheck:
+      # Readiness lives on the separate management port in the perf profile.
+      test: ["CMD-SHELL", "wget --quiet --spider http://localhost:9090/actuator/health/readiness"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1g

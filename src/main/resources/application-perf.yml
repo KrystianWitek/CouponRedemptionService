@@ -1,0 +1,21 @@
+logging:
+  level:
+    root: WARN
+    com.krystianwitek.couponredemptionservice: INFO
+
+logbook:
+  filter:
+    enabled: false
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+
+management:
+  server:
+    port: 9090
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
