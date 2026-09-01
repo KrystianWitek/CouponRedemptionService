@@ -3,7 +3,7 @@
 Load tests for the redemption path, run against the real application and PostgreSQL with a
 WireMock GeoIP stub (20 ms fixed delay — never the real provider). Client-side latency
 percentiles (p95/p99) come from k6; server-side saturation (Tomcat threads, Hikari pool,
-Postgres lock waits) from `monitor.sh`.
+Postgres lock waits) from `monitor.sh` and from the perf stack's own Grafana dashboard.
 
 Results measured on a laptop with generator and SUT on the same host are **indicative, not
 absolute** — container CPU/memory limits in `compose.perf.yml` keep them at least repeatable,
@@ -14,20 +14,44 @@ the *shape* of the saturation (what saturates first and in which order) is what 
 ## Setup
 
 ```bash
-docker compose -f perf/compose.perf.yml up --build -d   # app (perf profile) + postgres + wiremock
+docker compose -f perf/compose.perf.yml up --build -d   # app (perf profile) + postgres + wiremock + prometheus + grafana
 docker compose -f perf/compose.perf.yml ps              # wait until healthy
 mkdir -p perf-results
 ```
 
-Host ports are high and localhost-only so the stack can run next to the regular dev compose
-stack: application `http://localhost:18080`, its management port (actuator)
-`http://localhost:19090`, WireMock admin `http://localhost:8081`.
+The perf Compose project (`coupon-perf`) is self-contained: it starts its own application,
+PostgreSQL, WireMock, Prometheus and Grafana. Host ports are high and localhost-only so it can
+run next to the regular dev compose stack (`8080`/`9090`/`3000`):
+
+- application: [http://localhost:18080](http://localhost:18080)
+- health (separate management port): [http://localhost:19090/actuator/health](http://localhost:19090/actuator/health)
+- Actuator metrics: [http://localhost:19090/actuator/metrics](http://localhost:19090/actuator/metrics)
+- WireMock admin: [http://localhost:8081/__admin](http://localhost:8081/__admin)
+- Prometheus: [http://localhost:19091](http://localhost:19091)
+- Grafana: [http://localhost:13000](http://localhost:13000)
+- Coupon Redemption Service dashboard:
+  [http://localhost:13000/d/coupon-redemption-service/coupon-redemption-service](http://localhost:13000/d/coupon-redemption-service/coupon-redemption-service)
 
 The `perf` Spring profile disables Logbook request logging and raises log levels (otherwise you
 benchmark the logger), pins the pool sizes the scenarios reason about (Tomcat `threads.max: 200`,
-Hikari `maximum-pool-size: 10`), and exposes `/actuator/metrics` on a **separate management
-port** — during full saturation the application port stops answering, but the monitor keeps
-seeing the inside.
+Hikari `maximum-pool-size: 10`), and exposes `health`, `metrics` and `prometheus` on a
+**separate management port** — during full saturation the application port stops answering, but
+the monitor and Prometheus keep seeing the inside.
+
+## Observability
+
+The perf stack has its own monitoring, independent of the regular one in
+[`../compose.override.yml`](../compose.override.yml). Same pinned images, same provisioning and
+the same dashboard JSON (mounted read-only from [`../observability`](../observability)), but a
+separate Prometheus ([`prometheus/prometheus.yml`](prometheus/prometheus.yml)), a separate Grafana
+and separate named volumes. The perf Prometheus scrapes only `app:9090/actuator/prometheus`
+inside the `coupon-perf` network every 5 seconds, so **perf metrics never mix with the regular
+stack's history** — each Grafana shows exactly one application. Anonymous viewer access; sign in
+as `admin`/`admin` to use Explore.
+
+The dashboard's p50/p95/p99 panels need the HTTP latency histogram buckets, which the `perf`
+profile enables (`percentiles-histogram.http.server.requests`); Tomcat thread metrics need the
+MBean registry, also enabled there.
 
 In a second terminal, record what happens inside the SUT (requires `curl`, `jq`, `docker`):
 
@@ -37,7 +61,8 @@ In a second terminal, record what happens inside the SUT (requires `curl`, `jq`,
 
 Columns: `tomcat_busy` (busy worker threads), `hikari_active`/`hikari_pending` (connections in
 use / threads waiting for a connection), `pg_lock_waits` (Postgres sessions blocked on a lock —
-row contention made visible).
+row contention made visible). The CSV is the record you keep with the results; the dashboard is
+for watching the same saturation live and correlating it with the k6 timeline.
 
 ## Scenarios
 
@@ -133,3 +158,6 @@ inconclusive and `verify-s3.sh` settles it) and `coupon_unexpected` (must be zer
 ```bash
 docker compose -f perf/compose.perf.yml down --volumes
 ```
+
+`--volumes` also drops the perf Prometheus history and Grafana state (`coupon-perf_*` volumes
+only — the regular stack's volumes are untouched).

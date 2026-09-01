@@ -28,4 +28,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,metrics
+        # metrics feeds monitor.sh, prometheus feeds the perf Prometheus (perf/prometheus).
+        include: health,metrics,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        # Latency histogram buckets are required for the p50/p95/p99 dashboard panels.
+        http.server.requests: true
