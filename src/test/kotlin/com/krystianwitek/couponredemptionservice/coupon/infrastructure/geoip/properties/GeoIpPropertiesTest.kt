@@ -39,13 +39,14 @@ class GeoIpPropertiesTest {
             assertThat(properties.excludedAddresses)
                 .containsExactlyInAnyOrder("127.0.0.1", "::1")
 
-            val circuitBreaker = properties.circuitBreaker
-            assertThat(circuitBreaker.slidingWindowType).isEqualTo(SlidingWindowType.COUNT_BASED)
-            assertThat(circuitBreaker.slidingWindowSize).isEqualTo(10)
-            assertThat(circuitBreaker.minimumNumberOfCalls).isEqualTo(5)
-            assertThat(circuitBreaker.failureRateThreshold).isEqualTo(50f)
-            assertThat(circuitBreaker.waitDurationInOpenState).isEqualTo(Duration.ofSeconds(10))
-            assertThat(circuitBreaker.permittedNumberOfCallsInHalfOpenState).isEqualTo(3)
+            with(properties.circuitBreaker) {
+                assertThat(slidingWindowType).isEqualTo(SlidingWindowType.COUNT_BASED)
+                assertThat(slidingWindowSize).isEqualTo(10)
+                assertThat(minimumNumberOfCalls).isEqualTo(5)
+                assertThat(failureRateThreshold).isEqualTo(50f)
+                assertThat(waitDurationInOpenState).isEqualTo(Duration.ofSeconds(10))
+                assertThat(permittedNumberOfCallsInHalfOpenState).isEqualTo(3)
+            }
         }
     }
 
