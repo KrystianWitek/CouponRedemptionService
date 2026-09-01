@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/coupons")
+@RequestMapping("/api/v1/coupons")
 class CouponController(
     private val couponCreationService: CouponCreationService,
     private val couponRedemptionService: CouponRedemptionService,

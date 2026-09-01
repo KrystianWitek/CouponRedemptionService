@@ -3,7 +3,7 @@
 
 ### Create coupon
 
-POST {{baseUrl}}/coupons
+POST {{baseUrl}}/api/v1/coupons
 Content-Type: application/json
 
 {
@@ -14,7 +14,7 @@ Content-Type: application/json
 
 ### Redeem coupon
 
-POST {{baseUrl}}/coupons/redeem
+POST {{baseUrl}}/api/v1/coupons/redeem
 Content-Type: application/json
 
 {

@@ -39,7 +39,7 @@ internal class CouponControllerValidationTest
             val response =
                 mockMvc
                     .perform(
-                        post("/coupons")
+                        post("/api/v1/coupons")
                             .contentType(APPLICATION_JSON)
                             .content(request.toJson()),
                     ).andReturn()
@@ -59,7 +59,7 @@ internal class CouponControllerValidationTest
             val response =
                 mockMvc
                     .perform(
-                        post("/coupons/redeem")
+                        post("/api/v1/coupons/redeem")
                             .contentType(APPLICATION_JSON)
                             .content(request.toJson()),
                     ).andReturn()
