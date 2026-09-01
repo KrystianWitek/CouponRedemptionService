@@ -46,12 +46,12 @@ local development only:
   5 seconds and keeps 1 day of history.
 - Grafana: `http://localhost:3000` — anonymous viewer access; sign in as `admin`/`admin` to use
   Explore or edit anything. The Prometheus data source and the **Coupon Redemption Service**
-  dashboard are provisioned automatically.
+  dashboard are provisioned automatically, and the dashboard is the home page.
 
 The dashboard has two rows:
 
 - **HTTP** — request rate, p50/p95/p99 latency (from Micrometer histogram buckets), and response
-  rate grouped by status code, all for the whole application.
+  rate grouped by status code, all limited to `/api/**` traffic.
 - **Runtime** — Tomcat thread pool (busy/current/max), Hikari connections (active/pending/max),
   process CPU usage, and JVM heap (used/max).
 
