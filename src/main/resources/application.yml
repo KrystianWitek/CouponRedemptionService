@@ -19,6 +19,11 @@ management:
     health:
       probes:
         enabled: true
+      group:
+        readiness:
+          include:
+            - readinessState
+            - db
 
 geo-ip:
   base-url: ${GEO_IP_BASE_URL}
