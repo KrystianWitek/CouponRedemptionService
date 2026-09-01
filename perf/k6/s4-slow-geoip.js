@@ -1,13 +1,16 @@
 // S4 — degraded GeoIP: the provider is slow (1.5 s), not down.
-// Little's law: 140 rps x ~1.5 s ≈ 210 requests in flight — above the 200 default
-// Tomcat worker threads, so the pool stays pinned at 200 while the database sits
-// idle. Watch monitor.sh: tomcat_busy ≈ 200, hikari ≈ 0. This is the empirical
-// motivation for the GeoIP circuit breaker.
+// Little's law: 140 rps x ~1.5 s ≈ 210 requests in flight — above the 200 Tomcat
+// worker threads, so the pool stays pinned at ~200 while the database sits idle.
+// Watch monitor.sh: tomcat_busy ≈ 200, hikari ≈ 0.
 //
-// DELAY_MS stays below the application's 2 s read timeout so responses are
-// deterministic (201 after delay + queueing). Set DELAY_MS >= 2500 to exercise the
-// fail-closed path instead (every request -> 503 after the read timeout). Avoid
-// values right at 2000: delay == timeout produces a nondeterministic 201/503 mix.
+// What this demonstrates: a slow-but-correct dependency exhausts the server thread
+// pool. A purely failure-based circuit breaker does NOT open here (every response
+// is a valid 201) — the protections this scenario motivates are slow-call-rate
+// breaking, limiting concurrent calls to the provider (bulkhead), or an HTTP client
+// with pooling and tighter latency budgets. Set DELAY_MS >= 2500 to exercise the
+// other regime instead: every request fails closed with 503 after the 2 s read
+// timeout — those failures are what a failure-based circuit breaker reacts to.
+// Avoid values right at 2000: delay == timeout produces a nondeterministic mix.
 //
 // The "production-like" latency thresholds below are EXPECTED to fail — a non-zero
 // exit code is the point of the demonstration, not a broken test.
@@ -15,7 +18,8 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 const BASE = __ENV.BASE_URL || 'http://localhost:18080';
-const WIREMOCK = __ENV.WIREMOCK_URL || 'http://wiremock:8080';
+// Host-side default; inside the compose network pass -e WIREMOCK_URL=http://wiremock:8080.
+const WIREMOCK = __ENV.WIREMOCK_URL || 'http://localhost:8081';
 const RATE = Number(__ENV.RATE || 140);
 const DELAY_MS = Number(__ENV.DELAY_MS || 1500);
 const HEADERS = { 'Content-Type': 'application/json' };
@@ -41,7 +45,10 @@ export const options = {
 export function setup() {
   // Defensive: restore file-based mappings first, in case a previous interrupted
   // run left a slow stub behind (the 20 ms base stub comes back).
-  http.post(`${WIREMOCK}/__admin/mappings/reset`);
+  const reset = http.post(`${WIREMOCK}/__admin/mappings/reset`);
+  if (reset.status !== 200) {
+    throw new Error(`setup: failed to reset WireMock mappings: ${reset.status} ${reset.body}`);
+  }
 
   // Create the coupon BEFORE the slow stub: if coupon creation fails, k6 skips
   // teardown(), and a stub registered first would silently slow every subsequent

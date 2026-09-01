@@ -55,6 +55,10 @@ export const options = {
     coupon_success: [`count==${LIMIT}`],
     coupon_unexpected: ['count==0'],
     coupon_limit_reached: [`count>=${LIMIT}`],
+    // This is a correctness test: any transport-level loss makes the client-side
+    // picture inconclusive, so it fails loudly. It does not necessarily mean the
+    // invariants broke — run verify-s3.sh to settle it against the database.
+    coupon_client_error: ['count==0'],
   },
 };
 

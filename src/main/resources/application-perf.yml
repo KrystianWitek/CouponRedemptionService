@@ -1,3 +1,10 @@
+spring:
+  datasource:
+    hikari:
+      # Pinned explicitly: the perf scenarios and their documented interpretations
+      # assume this pool size — do not rely on the Spring Boot default.
+      maximum-pool-size: 10
+
 logging:
   level:
     root: WARN
@@ -11,6 +18,9 @@ server:
   tomcat:
     mbeanregistry:
       enabled: true
+    threads:
+      # Pinned explicitly for the same reason as the connection pool above.
+      max: 200
 
 management:
   server:

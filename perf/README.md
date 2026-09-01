@@ -24,8 +24,10 @@ stack: application `http://localhost:18080`, its management port (actuator)
 `http://localhost:19090`, WireMock admin `http://localhost:8081`.
 
 The `perf` Spring profile disables Logbook request logging and raises log levels (otherwise you
-benchmark the logger), and exposes `/actuator/metrics` on a **separate management port** — during
-full saturation the application port stops answering, but the monitor keeps seeing the inside.
+benchmark the logger), pins the pool sizes the scenarios reason about (Tomcat `threads.max: 200`,
+Hikari `maximum-pool-size: 10`), and exposes `/actuator/metrics` on a **separate management
+port** — during full saturation the application port stops answering, but the monitor keeps
+seeing the inside.
 
 In a second terminal, record what happens inside the SUT (requires `curl`, `jq`, `docker`):
 
@@ -39,21 +41,25 @@ row contention made visible).
 
 ## Scenarios
 
-Run k6 in the compose network (`BASE_URL=http://app:8080`); the image version is pinned for
-reproducibility:
+Run k6 inside the compose network. A shell function keeps the paths quoted (the repository path
+may contain spaces) and the image version pinned:
 
 ```bash
-K6="docker run --rm --network coupon-perf_default -v $PWD/perf/k6:/scripts:ro \
-    -e BASE_URL=http://app:8080 -e WIREMOCK_URL=http://wiremock:8080 grafana/k6:2.2.0 run"
+k6() {
+  docker run --rm --network coupon-perf_default -v "$PWD/perf/k6:/scripts:ro" \
+    -e BASE_URL=http://app:8080 -e WIREMOCK_URL=http://wiremock:8080 \
+    grafana/k6:2.2.0 run "$@"
+}
 
-$K6 /scripts/s1-hot-coupon.js     # single hot coupon — row-serialization ceiling
-$K6 /scripts/s2-spread.js         # 1000 coupons — realistic spread, Hikari becomes the bottleneck
-$K6 /scripts/s3-flash-sale.js     # up to 80k offered attempts, limit 10k — perf + correctness
-$K6 /scripts/s4-slow-geoip.js     # GeoIP at 1.5 s — thread-pool exhaustion demo
+k6 /scripts/s1-hot-coupon.js     # single hot coupon — row-serialization ceiling
+k6 /scripts/s2-spread.js         # 1000 coupons — realistic spread, Hikari becomes the bottleneck
+k6 /scripts/s3-flash-sale.js     # up to 80k offered attempts, limit 10k — perf + correctness
+k6 /scripts/s4-slow-geoip.js     # GeoIP at 1.5 s — thread-pool exhaustion demo
 ```
 
-Without `-e BASE_URL`, scripts default to `http://localhost:18080` (the perf stack seen from the
-host) — they never point at the dev stack, whose GeoIP is the real external provider.
+Without the env overrides, scripts default to the host-side perf ports
+(`BASE_URL=http://localhost:18080`, `WIREMOCK_URL=http://localhost:8081`) — they never point at
+the dev stack, whose GeoIP is the real external provider.
 
 Environment knobs differ per scenario:
 
@@ -63,7 +69,8 @@ Environment knobs differ per scenario:
 | s3 | `RATE=2000`, `LIMIT=10000`, `ATTEMPTS=80000` | constant arrival for `ATTEMPTS/RATE` seconds |
 | s4 | `RATE=140`, `DELAY_MS=1500` | constant arrival, fixed 90 s |
 
-Smoke run (s1/s2 only): `-e RATE_LOW=100 -e RATE_HIGH=200 -e HOLD=20s`.
+Smoke run (s1/s2 only): `-e RATE_LOW=100 -e RATE_HIGH=200 -e HOLD=20s` added to the
+`docker run` line.
 
 After S3, verify invariants directly in the database — **this is the source of truth**, k6
 counters only observe the client side (the coupon code is printed by setup):
@@ -78,27 +85,37 @@ S3 classifies every response: `coupon_success` (201, must equal the limit),
 guards the run applied real pressure), `coupon_geoip_rejected` (503 — fail-closed rejections:
 under extreme rps the pool-less GeoIP client saturates before the database does; nothing is
 persisted, invariants unaffected — and a finding in its own right), `coupon_client_error`
-(transport failures observed by the client) and `coupon_unexpected` (must be zero).
+(transport failures observed by the client; must be zero, otherwise the client-side picture is
+inconclusive and `verify-s3.sh` settles it) and `coupon_unexpected` (must be zero).
 
 ## Reading the results
 
 - **p95/p99** — from the k6 summary (`http_req_duration`). In s1/s2 the SLO thresholds
   (p95 < 200 ms, p99 < 500 ms) apply only to the `low` scenario tag; the `high` plateau is
   *expected* to saturate — its failed checks and `dropped_iterations` are the finding
-  (the capacity ceiling), not a broken test.
-- **Exit codes**: s4 exits non-zero by design (its "production-like" thresholds must fail to
-  demonstrate the degradation); s1/s2 exit non-zero whenever the `high` plateau saturates the
-  system, which is the expected outcome on a laptop. Do not wire these exit codes into CI as-is.
-- **`dropped_iterations` > 0** — the open-model generator could not sustain the target arrival
-  rate because the SUT saturated: you found the capacity ceiling.
+  (the capacity ceiling), not a test defect.
+- **Exit codes**: s1/s2 exit non-zero **only** when the `low` plateau misses its SLO — the
+  `high` plateau carries no thresholds, so read its results (dropped iterations, failure
+  percentages) from the summary, not from the exit code. s4 exits non-zero by design (its
+  "production-like" thresholds must fail to demonstrate the degradation). s3 exits zero only
+  when every response is accounted for and the invariants hold on the client side. Do not wire
+  these exit codes into CI as-is.
+- **`dropped_iterations` > 0** — the target arrival rate was not sustained. Usually that is the
+  SUT saturating, but a generator sharing the host can also fall behind — cross-check with
+  `monitor.sh` (a saturated SUT shows busy threads / pending connections; an idle SUT with
+  drops points at the generator).
 - **`pg_lock_waits` climbing in S1** — requests queueing on the hot coupon row: the expected
-  serialization ceiling (the row lock is held for the whole INSERT + UPDATE + commit).
+  serialization ceiling (the row lock is acquired by the conditional UPDATE and held until the
+  transaction commits).
 - **`hikari_pending` climbing in S2** — the 10-connection pool is the bottleneck; rerun with a
   bigger pool (`-e SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=30` on the app service) to compare.
 - **`tomcat_busy` pinned at ~200 in S4** — 140 rps × ~1.5 s ≈ 210 in-flight requests exceed the
-  200 worker threads: every thread waits on GeoIP while the database sits idle; the motivation
-  for the circuit breaker. With `DELAY_MS >= 2500` every request turns into a fail-closed 503
-  after the 2 s read timeout instead.
+  200 worker threads: every thread waits on a slow-but-correct GeoIP while the database sits
+  idle. Note what this does and does not motivate: a purely failure-based circuit breaker would
+  NOT open here (all responses are valid 201s) — the fixes this points at are slow-call-rate
+  breaking, a bulkhead on concurrent provider calls, or an HTTP client with pooling. With
+  `DELAY_MS >= 2500` every request instead fails closed with 503 after the 2 s read timeout —
+  that failure stream is what a failure-based circuit breaker reacts to.
 
 ## Hypotheses (write down before running)
 
