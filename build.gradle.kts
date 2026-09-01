@@ -43,6 +43,7 @@ configurations[integrationSourceSet.runtimeOnlyConfigurationName]
 dependencies {
     implementation(libs.kotlin.logging)
     implementation(libs.logbook.spring.boot.starter)
+    implementation(libs.springdoc.openapi.starter.webmvc.ui)
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
