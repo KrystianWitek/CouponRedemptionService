@@ -20,12 +20,13 @@ REST service for creating country-restricted discount coupons and recording thei
 docker compose up --build
 ```
 
-The application is available at `http://localhost:8080`.
+The application is available at [http://localhost:8080](http://localhost:8080).
 
 Health endpoints:
 
-- `GET /actuator/health/liveness`
-- `GET /actuator/health/readiness`
+- [Health](http://localhost:8080/actuator/health)
+- [Liveness](http://localhost:8080/actuator/health/liveness)
+- [Readiness](http://localhost:8080/actuator/health/readiness)
 
 Stop the application:
 
@@ -42,11 +43,15 @@ Add `--volumes` to remove the persisted PostgreSQL data and the collected metric
 start the application without it. The stack is bound to the loopback interface and is meant for
 local development only:
 
-- Prometheus: `http://localhost:9090` — scrapes `application:8080/actuator/prometheus` every
-  5 seconds and keeps 1 day of history.
-- Grafana: `http://localhost:3000` — anonymous viewer access; sign in as `admin`/`admin` to use
-  Explore or edit anything. The Prometheus data source and the **Coupon Redemption Service**
-  dashboard are provisioned automatically, and the dashboard is the home page.
+- Prometheus: [http://localhost:9090](http://localhost:9090) — scrapes the application every
+  5 seconds and keeps 1 day of history. The collected application metrics are available at
+  [http://localhost:8080/actuator/prometheus](http://localhost:8080/actuator/prometheus).
+- Grafana: [http://localhost:3000](http://localhost:3000) — anonymous viewer access; sign in as
+  `admin`/`admin` to use Explore or edit anything.
+- Coupon Redemption Service dashboard:
+  [http://localhost:3000/d/coupon-redemption-service/coupon-redemption-service](http://localhost:3000/d/coupon-redemption-service/coupon-redemption-service).
+  The Prometheus data source and dashboard are provisioned automatically, and the dashboard is
+  the home page.
 
 The dashboard has two rows:
 
@@ -69,8 +74,8 @@ under `/api/v2` without breaking existing clients:
 
 Interactive OpenAPI documentation is available while the application is running:
 
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- OpenAPI specification: `http://localhost:8080/v3/api-docs`
+- Swagger UI: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- OpenAPI specification: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 Runnable IntelliJ HTTP Client requests are available in [`http/coupons.http`](http/coupons.http).
 
