@@ -50,10 +50,11 @@ internal class CouponRedemptionTransactionIntegrationTest
                 }
 
             // then
+            val persistedCoupon = testCouponRepository.findById(coupon.id.value).get()
             assertThat(exception)
                 .isInstanceOf(CouponAlreadyRedeemedException::class.java)
                 .hasMessage("Coupon already redeemed by user: ${command.userId.value}")
-            assertThat(persistedCoupon(coupon).currentUsageCount).isEqualTo(1)
+            assertThat(persistedCoupon.currentUsageCount).isEqualTo(1)
         }
 
         @Test
@@ -70,11 +71,12 @@ internal class CouponRedemptionTransactionIntegrationTest
                 }
 
             // then
+            val persistedCoupon = testCouponRepository.findById(coupon.id.value).get()
             assertThat(exception)
                 .isInstanceOf(CouponUsageLimitReachedException::class.java)
                 .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
             assertThat(hasRedemption(coupon, command)).isFalse()
-            assertThat(persistedCoupon(coupon).currentUsageCount).isEqualTo(1)
+            assertThat(persistedCoupon.currentUsageCount).isEqualTo(1)
             verify(geoIpProvider, never()).resolveCountry(command.ipAddress)
         }
 
@@ -94,15 +96,14 @@ internal class CouponRedemptionTransactionIntegrationTest
                 }
 
             // then
+            val persistedCoupon = testCouponRepository.findById(coupon.id.value).get()
             assertThat(exception)
                 .isInstanceOf(CouponUsageLimitReachedException::class.java)
                 .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
             assertThat(hasRedemption(coupon, command)).isFalse()
-            assertThat(persistedCoupon(coupon).currentUsageCount).isEqualTo(1)
+            assertThat(persistedCoupon.currentUsageCount).isEqualTo(1)
             verify(couponRepository).incrementUsageIfAvailable(coupon.id)
         }
-
-        private fun persistedCoupon(coupon: Coupon) = testCouponRepository.findById(coupon.id.value).get()
 
         private fun hasRedemption(
             coupon: Coupon,
