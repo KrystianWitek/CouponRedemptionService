@@ -65,11 +65,8 @@ precisely what must not happen.
 - `application` gains one Spring import, `org.springframework.transaction.support.TransactionOperations`.
   This is an accepted, bounded cost: it is a narrow two-method interface rather than an annotation
   contract with proxying semantics, it is the only framework type the layer touches, and it is
-  substitutable — the unit tests inject `FakeTransactionOperations` and run the service with a plain
-  constructor, no Spring context involved.
-- The write order is pinned by `CouponRedemptionTransactionIntegrationTest`, which drives the service
-  against a real database: an increment that loses to the limit leaves no redemption row behind, and
-  an already exhausted coupon is rejected without the GeoIP provider being called at all.
+  substitutable — the layer can be driven with a plain constructor and a hand-written stand-in
+  instead of a Spring context.
 - The window between the country check and the transaction is real but harmless — the only state that
   can change in it is the usage count, and the conditional `UPDATE` re-evaluates that anyway.
 - A repeat request from a user who already redeemed the coupon still pays for a GeoIP round-trip

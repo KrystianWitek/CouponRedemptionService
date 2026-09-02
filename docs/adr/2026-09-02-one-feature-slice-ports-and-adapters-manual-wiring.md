@@ -54,9 +54,9 @@ internal class CouponConfiguration {
 
 Three reasons:
 
-1. **The application layer stays free of Spring annotations.** Its unit tests build the service with
-   a plain constructor and hand-written fakes (`InMemoryCouponRepository`, `FakeTransactionOperations`)
-   — no context, no component scan, no proxying, tests that run in milliseconds.
+1. **The application layer stays free of Spring annotations.** The service can be constructed
+   directly, with hand-written stand-ins behind its ports — no context, no component scan, no
+   proxying.
 2. **The wiring of the slice is readable in one file.** What depends on what is a list of constructor
    calls rather than something to be reconstructed by searching for annotations. A new use case means
    a new `@Bean` in the same place.

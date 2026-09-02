@@ -83,13 +83,6 @@ stops holding at the exact moment the service is scaled out — and scalability 
 - The statements are PostgreSQL-flavoured native SQL, so the persistence adapter is tied to
   PostgreSQL — accepted, because the database is a chosen part of the design rather than a detail kept
   swappable.
-- Verified empirically rather than argued: `CouponUsageIntegrationTest` fires 20 concurrent increments
-  at a coupon with a limit of 5 and asserts exactly 5 successes and a final count of 5;
-  `CouponRedemptionConcurrencyIntegrationTest` drives the full service with 20 concurrent requests
-  from one user (exactly one redemption, 19 `CouponAlreadyRedeemedException`, count 1) and with 20
-  distinct users against a limit of 5 (exactly 5 redemptions, no duplicate users, count 5). Both run
-  against a real PostgreSQL container with `@Transactional(propagation = NOT_SUPPORTED)`, so each
-  thread commits independently.
 
 ## Status
 

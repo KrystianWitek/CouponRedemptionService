@@ -77,11 +77,6 @@ evaluate it right now, and the caller may retry.
   would reuse connections and stop paying TCP and TLS setup on every redemption.
 - No credentials or API key are involved, which is why the free provider was chosen; the flip side is
   an unspecified rate limit that this service does nothing to manage.
-- Every row of the table above is covered by a test: `GeoIpProviderAdapterTest` exercises the
-  excluded address (asserting that WireMock saw no request at all), `"success": false`, HTTP `429`
-  and `500`, and a read timeout; `IpWhoIsResponseTest` covers the parsing cases, including a missing
-  and a non-ISO `country_code`. No test in the suite calls the real provider — full-context
-  integration tests replace `GeoIpProvider` with a `@MockitoBean`.
 
 ## Status
 
