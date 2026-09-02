@@ -63,11 +63,7 @@ Content-Type: application/json
 ```
 
 Run against a locally started application, this request answers `503 Service Unavailable` with
-`GEO_IP_LOOKUP_FAILED`. Two mechanisms produce that one answer, and both follow the same fail-closed
-policy: a caller whose address is listed in `GEO_IP_EXCLUDED_ADDRESSES` (`127.0.0.1,::1` under
-`docker compose`) is refused before any request is sent to the provider, and a caller that the
-application sees through the Docker network gateway carries a private address, which the provider
-itself answers with `"success": false`.
+`GEO_IP_LOOKUP_FAILED`: a local address cannot be geolocated, see the [project README](../README.md#quick-start).
 
 Repeating the request for a `userId` that already redeemed the coupon answers `409 Conflict` with
 `COUPON_ALREADY_REDEEMED`.
