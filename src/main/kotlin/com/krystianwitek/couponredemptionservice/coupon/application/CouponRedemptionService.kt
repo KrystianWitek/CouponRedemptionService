@@ -13,17 +13,11 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.repository.Coupon
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.support.TransactionOperations
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 interface CouponRedemptionService {
     fun redeem(command: RedeemCouponCommand): CouponRedemption
 }
-
-data class RedeemCouponCommand(
-    val code: CouponCode,
-    val userId: UserId,
-    val ipAddress: String,
-)
 
 internal class DefaultCouponRedemptionService(
     private val couponRepository: CouponRepository,
