@@ -3,29 +3,36 @@ package com.krystianwitek.couponredemptionservice.coupon.application
 import com.krystianwitek.couponredemptionservice.coupon.aCoupon
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
-import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
+import com.krystianwitek.couponredemptionservice.coupon.domain.Coupon
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
 import com.krystianwitek.couponredemptionservice.infrastructure.IntegrationTest
 import com.krystianwitek.couponredemptionservice.infrastructure.persistence.TestCouponRedemptionRepository
+import com.krystianwitek.couponredemptionservice.infrastructure.persistence.TestCouponRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
-import org.mockito.Mockito.verifyNoInteractions
+import org.mockito.BDDMockito.willReturn
+import org.mockito.Mockito.never
+import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 
 @IntegrationTest
 internal class CouponRedemptionTransactionIntegrationTest
     @Autowired
     constructor(
         private val couponRedemptionService: CouponRedemptionService,
-        private val couponRepository: CouponRepository,
+        private val testCouponRepository: TestCouponRepository,
         private val testCouponRedemptionRepository: TestCouponRedemptionRepository,
     ) {
         @MockitoBean
         private lateinit var geoIpProvider: GeoIpProvider
+
+        @MockitoSpyBean
+        private lateinit var couponRepository: CouponRepository
 
         @Test
         fun `should not increment usage when coupon was already redeemed by user`() {
@@ -46,19 +53,13 @@ internal class CouponRedemptionTransactionIntegrationTest
             assertThat(exception)
                 .isInstanceOf(CouponAlreadyRedeemedException::class.java)
                 .hasMessage("Coupon already redeemed by user: ${command.userId.value}")
-            assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
+            assertThat(currentUsageCountOf(coupon)).isEqualTo(1)
         }
 
         @Test
         fun `should reject exhausted coupon before opening a transaction`() {
             // given
-            val coupon =
-                aCoupon(
-                    maxUsageCount = 1,
-                    currentUsageCount = 1,
-                    country = COUNTRY,
-                )
-            couponRepository.createIfAbsent(coupon)
+            val coupon = anExhaustedCoupon()
             val command = aRedeemCouponCommand(code = coupon.code)
 
             // when
@@ -71,33 +72,18 @@ internal class CouponRedemptionTransactionIntegrationTest
             assertThat(exception)
                 .isInstanceOf(CouponUsageLimitReachedException::class.java)
                 .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
-            assertThat(
-                testCouponRedemptionRepository.existsByCouponIdAndUserId(
-                    couponId = coupon.id.value,
-                    userId = command.userId.value,
-                ),
-            ).isFalse()
-            assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
-            verifyNoInteractions(geoIpProvider)
+            assertThat(hasRedemption(coupon, command)).isFalse()
+            assertThat(currentUsageCountOf(coupon)).isEqualTo(1)
+            verify(geoIpProvider, never()).resolveCountry(command.ipAddress)
         }
 
         @Test
         fun `should rollback redemption when coupon usage limit was reached`() {
             // given
-            val coupon = aCoupon(maxUsageCount = 1, country = COUNTRY)
-            couponRepository.createIfAbsent(coupon)
+            val coupon = anExhaustedCoupon()
             val command = aRedeemCouponCommand(code = coupon.code)
-            val competingCommand =
-                aRedeemCouponCommand(
-                    code = coupon.code,
-                    userId = UserId.from("competing-user"),
-                    ipAddress = COMPETING_IP_ADDRESS,
-                )
-            given(geoIpProvider.resolveCountry(COMPETING_IP_ADDRESS)).willReturn(COUNTRY)
-            given(geoIpProvider.resolveCountry(command.ipAddress)).willAnswer {
-                couponRedemptionService.redeem(competingCommand)
-                COUNTRY_CODE
-            }
+            given(geoIpProvider.resolveCountry(command.ipAddress)).willReturn(COUNTRY)
+            givenServiceReadsCouponAsStillAvailable(coupon)
 
             // when
             val exception =
@@ -109,24 +95,35 @@ internal class CouponRedemptionTransactionIntegrationTest
             assertThat(exception)
                 .isInstanceOf(CouponUsageLimitReachedException::class.java)
                 .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
-            assertThat(
-                testCouponRedemptionRepository.existsByCouponIdAndUserId(
-                    couponId = coupon.id.value,
-                    userId = command.userId.value,
-                ),
-            ).isFalse()
-            assertThat(
-                testCouponRedemptionRepository.existsByCouponIdAndUserId(
-                    couponId = coupon.id.value,
-                    userId = competingCommand.userId.value,
-                ),
-            ).isTrue()
-            assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
+            assertThat(hasRedemption(coupon, command)).isFalse()
+            assertThat(currentUsageCountOf(coupon)).isEqualTo(1)
+            verify(couponRepository).incrementUsageIfAvailable(coupon.id)
         }
 
+        private fun anExhaustedCoupon() =
+            aCoupon(
+                maxUsageCount = 1,
+                currentUsageCount = 1,
+                country = COUNTRY,
+            ).also(couponRepository::createIfAbsent)
+
+        private fun givenServiceReadsCouponAsStillAvailable(coupon: Coupon) {
+            willReturn(coupon.copy(currentUsageCount = 0))
+                .given(couponRepository)
+                .findByCode(coupon.code)
+        }
+
+        private fun currentUsageCountOf(coupon: Coupon) = testCouponRepository.findById(coupon.id.value).get().currentUsageCount
+
+        private fun hasRedemption(
+            coupon: Coupon,
+            command: RedeemCouponCommand,
+        ) = testCouponRedemptionRepository.existsByCouponIdAndUserId(
+            couponId = coupon.id.value,
+            userId = command.userId.value,
+        )
+
         private companion object {
-            const val COUNTRY_CODE = "PL"
-            const val COMPETING_IP_ADDRESS = "1.1.1.1"
-            val COUNTRY = CountryCode.from(COUNTRY_CODE)
+            val COUNTRY = CountryCode.from("PL")
         }
     }
