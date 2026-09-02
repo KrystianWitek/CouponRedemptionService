@@ -1,5 +1,9 @@
 package com.krystianwitek.couponredemptionservice.coupon.api
 
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.CouponRedemptionResponse
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.CouponResponse
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.CreateCouponRequest
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.RedeemCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCreationService
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponRedemptionService
 import io.github.oshai.kotlinlogging.KotlinLogging

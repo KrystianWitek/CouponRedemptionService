@@ -2,6 +2,7 @@ package com.krystianwitek.couponredemptionservice.coupon.api
 
 import com.krystianwitek.couponredemptionservice.coupon.aCoupon
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponRequest
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.CouponRedemptionResponse
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider

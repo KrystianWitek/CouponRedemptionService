@@ -22,3 +22,7 @@ class CouponAlreadyRedeemedException(
     val couponId: CouponId,
     val userId: UserId,
 ) : RuntimeException("Coupon already redeemed by user: ${userId.value}")
+
+class CouponAlreadyExistsException(
+    val code: CouponCode,
+) : RuntimeException("Coupon already exists: ${code.value}")

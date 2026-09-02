@@ -12,6 +12,7 @@ import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorC
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_USAGE_LIMIT_REACHED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.GEO_IP_LOOKUP_FAILED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.INVALID_COUNTRY_CODE
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.CreateCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyExistsException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyRedeemedException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCountryMismatchException
