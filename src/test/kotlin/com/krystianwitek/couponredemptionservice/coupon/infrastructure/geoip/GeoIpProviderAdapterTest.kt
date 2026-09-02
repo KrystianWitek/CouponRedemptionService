@@ -11,6 +11,7 @@ import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.config.GeoIpConfiguration
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.properties.GeoIpProperties
+import com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.properties.GeoIpProperties.CircuitBreakerProperties
 import com.krystianwitek.couponredemptionservice.infrastructure.WithWireMock
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -105,9 +106,82 @@ class GeoIpProviderAdapterTest : WithWireMock {
         }.isInstanceOf(GeoIpLookupException::class.java)
     }
 
+    @Test
+    fun `should fail fast once repeated provider errors open the circuit breaker`() {
+        // given
+        val adapter = createAdapter(circuitBreakerProperties = smallCircuitBreakerProperties())
+        wireMock.stubFor(
+            get(urlPathEqualTo("/8.8.4.4"))
+                .willReturn(aResponse().withStatus(500)),
+        )
+
+        // when
+        repeat(4) {
+            assertThatThrownBy {
+                adapter.resolveCountry("8.8.4.4")
+            }.isInstanceOf(GeoIpLookupException::class.java)
+        }
+
+        // then
+        assertThatThrownBy {
+            adapter.resolveCountry("8.8.4.4")
+        }.isInstanceOf(GeoIpLookupException::class.java)
+            .hasMessage("GeoIP provider is temporarily unavailable")
+        wireMock.verify(4, anyRequestedFor(anyUrl()))
+    }
+
+    @Test
+    fun `should not count excluded address lookups towards the circuit breaker`() {
+        // given
+        val adapter =
+            createAdapter(
+                excludedAddresses = setOf("127.0.0.1"),
+                circuitBreakerProperties = smallCircuitBreakerProperties(minimumNumberOfCalls = 2),
+            )
+        wireMock.stubFor(
+            get(urlPathEqualTo("/8.8.8.8"))
+                .willReturn(okJson("""{"success":true,"country_code":"US"}""")),
+        )
+
+        // when
+        repeat(5) {
+            assertThatThrownBy {
+                adapter.resolveCountry("127.0.0.1")
+            }.isInstanceOf(GeoIpLookupException::class.java)
+        }
+
+        // then
+        assertThat(adapter.resolveCountry("8.8.8.8")).isEqualTo(CountryCode.from("US"))
+        wireMock.verify(1, anyRequestedFor(anyUrl()))
+    }
+
+    @Test
+    fun `should count empty provider responses towards opening the circuit breaker`() {
+        // given
+        val adapter = createAdapter(circuitBreakerProperties = smallCircuitBreakerProperties())
+        wireMock.stubFor(
+            get(urlPathEqualTo("/8.8.8.8"))
+                .willReturn(aResponse().withStatus(200)),
+        )
+
+        // when
+        repeat(4) {
+            assertThatThrownBy {
+                adapter.resolveCountry("8.8.8.8")
+            }.isInstanceOf(GeoIpLookupException::class.java)
+        }
+
+        // then
+        assertThatThrownBy {
+            adapter.resolveCountry("8.8.8.8")
+        }.isInstanceOf(GeoIpLookupException::class.java)
+        wireMock.verify(4, anyRequestedFor(anyUrl()))
+    }
+
     private fun createAdapter(
         readTimeout: Duration = Duration.ofSeconds(2),
         excludedAddresses: Set<String> = emptySet(),
+        circuitBreakerProperties: CircuitBreakerProperties = CircuitBreakerProperties(),
     ): GeoIpProviderAdapter {
         val properties =
             GeoIpProperties(
@@ -115,9 +189,19 @@ class GeoIpProviderAdapterTest : WithWireMock {
                 connectTimeout = Duration.ofSeconds(1),
                 readTimeout = readTimeout,
                 excludedAddresses = excludedAddresses,
+                circuitBreaker = circuitBreakerProperties,
             )
-        val restClient = GeoIpConfiguration().geoIpRestClient(RestClient.builder(), properties)
+        val configuration = GeoIpConfiguration()
+        val restClient = configuration.geoIpRestClient(RestClient.builder(), properties)
+        val circuitBreaker = configuration.geoIpCircuitBreaker(configuration.geoIpCircuitBreakerRegistry(properties))
 
-        return GeoIpProviderAdapter(restClient, properties)
+        return GeoIpProviderAdapter(restClient, properties, circuitBreaker)
     }
+
+    private fun smallCircuitBreakerProperties(minimumNumberOfCalls: Int = 4): CircuitBreakerProperties =
+        CircuitBreakerProperties(
+            slidingWindowSize = 4,
+            minimumNumberOfCalls = minimumNumberOfCalls,
+            waitDurationInOpenState = Duration.ofMinutes(1),
+        )
 }

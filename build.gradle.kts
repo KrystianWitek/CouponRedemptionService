@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.kotlin.logging)
     implementation(libs.logbook.spring.boot.starter)
     implementation(libs.micrometer.registry.prometheus)
+    implementation(libs.resilience4j.circuitbreaker)
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
