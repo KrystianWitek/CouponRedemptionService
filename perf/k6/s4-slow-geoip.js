@@ -1,4 +1,4 @@
-// S4 — degraded GeoIP: the provider is slow (1.5 s), not down.
+// S4 — Slow GeoIP provider: the dependency is slow (1.5 s), not down.
 // Little's law: 140 rps x ~1.5 s ≈ 210 requests in flight — above the 200 Tomcat
 // worker threads, so the pool stays pinned at ~200 while the database sits idle.
 // Watch monitor.sh: tomcat_busy ≈ 200, hikari ≈ 0.
@@ -16,12 +16,16 @@
 // exit code is the point of the demonstration, not a broken test.
 import http from 'k6/http';
 import { check } from 'k6';
+import { logScenario } from './scenario-banner.js';
 
 const BASE = __ENV.BASE_URL || 'http://localhost:18080';
 // Host-side default; inside the compose network pass -e WIREMOCK_URL=http://wiremock:8080.
 const WIREMOCK = __ENV.WIREMOCK_URL || 'http://localhost:8081';
 const RATE = Number(__ENV.RATE || 140);
 const DELAY_MS = Number(__ENV.DELAY_MS || 1500);
+const DURATION_S = 90;
+// The GeoIP read timeout is 2 s, so the delay decides which failure mode is on show.
+const BEYOND_READ_TIMEOUT = DELAY_MS > 2000;
 const HEADERS = { 'Content-Type': 'application/json' };
 
 export const options = {
@@ -31,7 +35,7 @@ export const options = {
       executor: 'constant-arrival-rate',
       rate: RATE,
       timeUnit: '1s',
-      duration: '90s',
+      duration: `${DURATION_S}s`,
       preAllocatedVUs: 500,
       maxVUs: 2000,
     },
@@ -43,6 +47,18 @@ export const options = {
 };
 
 export function setup() {
+  const outcome = BEYOND_READ_TIMEOUT
+    ? 'every redemption fails closed with 503 after the 2 s read timeout'
+    : 'redemptions still succeed, but latency grows far past the provider delay';
+  logScenario({
+    id: 'S4',
+    name: 'Slow GeoIP provider',
+    checks: 'how the service degrades when a dependency is slow rather than down',
+    expects: `${outcome}; the thresholds here are meant to fail`,
+    load: `${RATE} rps for ${DURATION_S}s, GeoIP stub delayed ${DELAY_MS}ms`,
+    watch: 'tomcat_busy near its 200 maximum while hikari_active stays near zero',
+  });
+
   // Defensive: restore file-based mappings first, in case a previous interrupted
   // run left a slow stub behind (the 20 ms base stub comes back).
   const reset = http.post(`${WIREMOCK}/__admin/mappings/reset`);

@@ -76,10 +76,24 @@ k6() {
     grafana/k6:2.2.0 run "$@"
 }
 
-k6 /scripts/s1-hot-coupon.js     # single hot coupon — row-serialization ceiling
-k6 /scripts/s2-spread.js         # 1000 coupons — realistic spread, Hikari becomes the bottleneck
-k6 /scripts/s3-flash-sale.js     # up to 80k offered attempts, limit 10k — perf + correctness
-k6 /scripts/s4-slow-geoip.js     # GeoIP at 1.5 s — thread-pool exhaustion demo
+k6 /scripts/s1-hot-coupon.js     # S1 Single hot coupon — row-serialization ceiling
+k6 /scripts/s2-spread.js         # S2 Traffic spread across many coupons — app CPU + GeoIP client
+k6 /scripts/s3-flash-sale.js     # S3 Flash sale — exact usage limit under full load
+k6 /scripts/s4-slow-geoip.js     # S4 Slow GeoIP provider — thread-pool exhaustion
+```
+
+Each script opens with a banner (`scenario-banner.js`, logged once from `setup()`) naming the
+scenario, the question it answers, the outcome that means *working as designed* — including the
+thresholds that are supposed to fail — the knobs actually in effect, and the signals to watch.
+It is the first thing in the saved output, so a result file read later still says what it
+measured:
+
+```
+S3 — Flash sale
+  checks:  whether the usage limit stays exact when attempts far exceed it
+  expects: exactly 10000 successes, the rest 409; nothing unexpected, no transport loss
+  load:    2000 rps for 40s, up to 80000 attempts, limit 10000
+  watch:   the coupon_* counters in the summary, then verify-s3.sh against the database
 ```
 
 Without the env overrides, scripts default to the host-side perf ports

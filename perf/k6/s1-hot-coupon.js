@@ -1,10 +1,11 @@
-// S1 — single hot coupon: measures the row-serialization ceiling.
+// S1 — Single hot coupon: measures the row-serialization ceiling.
 // Every request uses a unique user, so the only contention is the coupon row lock.
 // The run is split into tagged scenarios so thresholds judge each plateau separately:
 // `low` must stay green; `high` is expected to saturate — failed checks and dropped
 // iterations there ARE the measurement (the capacity ceiling), not a test defect.
 import http from 'k6/http';
 import { check } from 'k6';
+import { logScenario } from './scenario-banner.js';
 
 const BASE = __ENV.BASE_URL || 'http://localhost:18080';
 const RATE_LOW = Number(__ENV.RATE_LOW || 300);
@@ -63,6 +64,15 @@ export const options = {
 };
 
 export function setup() {
+  logScenario({
+    id: 'S1',
+    name: 'Single hot coupon',
+    checks: 'the ceiling when every redemption competes for the same coupon row',
+    expects: `'low' meets the SLO; 'high' saturates on the row lock — the drops are the ceiling`,
+    load: `${RATE_LOW} then ${RATE_HIGH} rps, 1 coupon, one user per request, ${HOLD_S}s plateaus`,
+    watch: 'pg_lock_waits climbing, hikari_active pinned at max, tomcat_busy at max',
+  });
+
   const code = `PERFS1${Date.now()}`;
   const res = http.post(
     `${BASE}/api/v1/coupons`,

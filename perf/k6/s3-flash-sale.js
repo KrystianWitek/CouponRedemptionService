@@ -1,4 +1,4 @@
-// S3 — flash sale: up to ATTEMPTS offered attempts against a coupon limited to LIMIT,
+// S3 — Flash sale: up to ATTEMPTS offered attempts against a coupon limited to LIMIT,
 // under full load. A performance-and-correctness test in one: exactly LIMIT requests
 // must end with 201, and every other outcome must be an explainable rejection.
 //
@@ -21,6 +21,7 @@
 // checks the invariants directly in the database and is the source of truth.
 import http from 'k6/http';
 import { Counter } from 'k6/metrics';
+import { logScenario } from './scenario-banner.js';
 
 const BASE = __ENV.BASE_URL || 'http://localhost:18080';
 const RATE = Number(__ENV.RATE || 2000);
@@ -28,6 +29,7 @@ const LIMIT = Number(__ENV.LIMIT || 10000);
 // 80k offered over 40 s: even at a few hundred tps of actual throughput the run
 // still applies enough pressure to exhaust the limit with a wide margin on slower hosts.
 const ATTEMPTS = Number(__ENV.ATTEMPTS || 80000);
+const DURATION_S = Math.ceil(ATTEMPTS / RATE);
 const HEADERS = { 'Content-Type': 'application/json' };
 
 const success = new Counter('coupon_success');
@@ -43,7 +45,7 @@ export const options = {
       executor: 'constant-arrival-rate',
       rate: RATE,
       timeUnit: '1s',
-      duration: `${Math.ceil(ATTEMPTS / RATE)}s`,
+      duration: `${DURATION_S}s`,
       preAllocatedVUs: 2000,
       maxVUs: 6000,
       // Longer than the request timeout, so in-flight requests finish and their
@@ -63,6 +65,15 @@ export const options = {
 };
 
 export function setup() {
+  logScenario({
+    id: 'S3',
+    name: 'Flash sale',
+    checks: 'whether the usage limit stays exact when attempts far exceed it',
+    expects: `exactly ${LIMIT} successes, the rest 409; nothing unexpected, no transport loss`,
+    load: `${RATE} rps for ${DURATION_S}s, up to ${ATTEMPTS} attempts, limit ${LIMIT}`,
+    watch: 'the coupon_* counters in the summary, then verify-s3.sh against the database',
+  });
+
   const code = `PERFS3F${Date.now()}`;
   const res = http.post(
     `${BASE}/api/v1/coupons`,

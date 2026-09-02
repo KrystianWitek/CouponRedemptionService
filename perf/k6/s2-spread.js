@@ -1,9 +1,13 @@
-// S2 — traffic spread across 1000 coupons: a realistic shop profile.
-// Single-row contention disappears; the connection pool (Hikari) becomes the bottleneck.
+// S2 — Traffic spread across many coupons: a realistic shop profile.
+// Single-row contention disappears, which moves the ceiling elsewhere: measured runs
+// put it at application CPU and at the pool-less GeoIP HTTP client (it opens a fresh
+// connection per lookup and exhausts the container's ephemeral ports), not at the
+// Hikari pool — a high hikari_pending here counts waiting THREADS, not a full pool.
 // Same tagged-scenario structure as S1: `low` must stay green, `high` is expected
 // to saturate and its failures are the measurement.
 import http from 'k6/http';
 import { check } from 'k6';
+import { logScenario } from './scenario-banner.js';
 
 const BASE = __ENV.BASE_URL || 'http://localhost:18080';
 const RATE_LOW = Number(__ENV.RATE_LOW || 300);
@@ -61,6 +65,15 @@ export const options = {
 };
 
 export function setup() {
+  logScenario({
+    id: 'S2',
+    name: 'Traffic spread across many coupons',
+    checks: 'what limits throughput once single-row contention is gone',
+    expects: `'low' meets the SLO; 'high' saturates on application CPU and the GeoIP client`,
+    load: `${RATE_LOW} then ${RATE_HIGH} rps, ${COUPONS} coupons at random, ${HOLD_S}s plateaus`,
+    watch: 'hikari_active (not pending), process CPU, 503 GEO_IP_LOOKUP_FAILED bursts',
+  });
+
   const runId = Date.now();
   const codes = [];
   const batchSize = 100;
