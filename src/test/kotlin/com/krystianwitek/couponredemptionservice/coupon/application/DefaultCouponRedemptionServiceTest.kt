@@ -1,6 +1,7 @@
 package com.krystianwitek.couponredemptionservice.coupon.application
 
 import com.krystianwitek.couponredemptionservice.coupon.aCoupon
+import com.krystianwitek.couponredemptionservice.coupon.aCouponRedemption
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
@@ -85,6 +86,29 @@ internal class DefaultCouponRedemptionServiceTest {
     }
 
     @Test
+    fun `should reject redemption when user already redeemed coupon`() {
+        // given
+        val command = aRedeemCouponCommand()
+        val coupon = aCoupon(code = command.code, country = REQUEST_COUNTRY)
+        couponRepository.createIfAbsent(coupon)
+        val existingRedemption = aCouponRedemption(couponId = coupon.id, userId = command.userId)
+        couponRedemptionRepository.createIfAbsent(existingRedemption)
+
+        // when
+        val exception =
+            catchThrowable {
+                service.redeem(command)
+            }
+
+        // then
+        assertThat(exception)
+            .isInstanceOf(CouponAlreadyRedeemedException::class.java)
+            .hasMessage("Coupon already redeemed by user: ${command.userId.value}")
+        assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isZero()
+        assertThat(couponRedemptionRepository.findAll()).containsExactly(existingRedemption)
+    }
+
+    @Test
     fun `should reject redemption when usage limit is reached`() {
         // given
         val command = aRedeemCouponCommand()
@@ -108,6 +132,7 @@ internal class DefaultCouponRedemptionServiceTest {
             .isInstanceOf(CouponUsageLimitReachedException::class.java)
             .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
         assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
+        assertThat(couponRedemptionRepository.findAll()).isEmpty()
     }
 
     private companion object {

@@ -12,12 +12,13 @@ data class Coupon(
     val country: CountryCode,
 ) {
     init {
-        require(maxUsageCount > 0) { "Maximum usage count must be greater than zero" }
-        require(currentUsageCount >= 0) { "Current usage count must not be negative" }
         require(currentUsageCount <= maxUsageCount) {
             "Current usage count must not exceed maximum usage count"
         }
     }
+
+    val isExhausted: Boolean
+        get() = currentUsageCount >= maxUsageCount
 }
 
 @JvmInline
