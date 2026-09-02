@@ -1,6 +1,7 @@
 package com.krystianwitek.couponredemptionservice.coupon.application
 
 import com.krystianwitek.couponredemptionservice.coupon.aCoupon
+import com.krystianwitek.couponredemptionservice.coupon.aCouponRedemption
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
@@ -83,6 +84,29 @@ internal class DefaultCouponRedemptionServiceTest {
             .hasMessage("Coupon is not valid for country: ${REQUEST_COUNTRY.value}")
         assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isZero()
         assertThat(couponRedemptionRepository.findAll()).isEmpty()
+    }
+
+    @Test
+    fun `should reject redemption when user already redeemed coupon`() {
+        // given
+        val command = aRedeemCouponCommand()
+        val coupon = aCoupon(code = command.code, country = REQUEST_COUNTRY)
+        couponRepository.createIfAbsent(coupon)
+        val existingRedemption = aCouponRedemption(couponId = coupon.id, userId = command.userId)
+        couponRedemptionRepository.createIfAbsent(existingRedemption)
+
+        // when
+        val exception =
+            catchThrowable {
+                service.redeem(command)
+            }
+
+        // then
+        assertThat(exception)
+            .isInstanceOf(CouponAlreadyRedeemedException::class.java)
+            .hasMessage("Coupon already redeemed by user: ${command.userId.value}")
+        assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isZero()
+        assertThat(couponRedemptionRepository.findAll()).containsExactly(existingRedemption)
     }
 
     @Test
