@@ -3,6 +3,7 @@ package com.krystianwitek.couponredemptionservice.coupon.application
 import com.krystianwitek.couponredemptionservice.coupon.aCoupon
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
+import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
 import com.krystianwitek.couponredemptionservice.infrastructure.IntegrationTest
@@ -11,6 +12,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
+import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 
@@ -48,7 +50,7 @@ internal class CouponRedemptionTransactionIntegrationTest
         }
 
         @Test
-        fun `should rollback redemption when coupon usage limit was reached`() {
+        fun `should reject exhausted coupon before opening a transaction`() {
             // given
             val coupon =
                 aCoupon(
@@ -58,7 +60,6 @@ internal class CouponRedemptionTransactionIntegrationTest
                 )
             couponRepository.createIfAbsent(coupon)
             val command = aRedeemCouponCommand(code = coupon.code)
-            given(geoIpProvider.resolveCountry(command.ipAddress)).willReturn(COUNTRY)
 
             // when
             val exception =
@@ -77,9 +78,55 @@ internal class CouponRedemptionTransactionIntegrationTest
                 ),
             ).isFalse()
             assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
+            verifyNoInteractions(geoIpProvider)
+        }
+
+        @Test
+        fun `should rollback redemption when coupon usage limit was reached`() {
+            // given
+            val coupon = aCoupon(maxUsageCount = 1, country = COUNTRY)
+            couponRepository.createIfAbsent(coupon)
+            val command = aRedeemCouponCommand(code = coupon.code)
+            val competingCommand =
+                aRedeemCouponCommand(
+                    code = coupon.code,
+                    userId = UserId.from("competing-user"),
+                    ipAddress = COMPETING_IP_ADDRESS,
+                )
+            given(geoIpProvider.resolveCountry(COMPETING_IP_ADDRESS)).willReturn(COUNTRY)
+            given(geoIpProvider.resolveCountry(command.ipAddress)).willAnswer {
+                couponRedemptionService.redeem(competingCommand)
+                COUNTRY_CODE
+            }
+
+            // when
+            val exception =
+                catchThrowable {
+                    couponRedemptionService.redeem(command)
+                }
+
+            // then
+            assertThat(exception)
+                .isInstanceOf(CouponUsageLimitReachedException::class.java)
+                .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
+            assertThat(
+                testCouponRedemptionRepository.existsByCouponIdAndUserId(
+                    couponId = coupon.id.value,
+                    userId = command.userId.value,
+                ),
+            ).isFalse()
+            assertThat(
+                testCouponRedemptionRepository.existsByCouponIdAndUserId(
+                    couponId = coupon.id.value,
+                    userId = competingCommand.userId.value,
+                ),
+            ).isTrue()
+            assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
         }
 
         private companion object {
-            val COUNTRY = CountryCode.from("PL")
+            const val COUNTRY_CODE = "PL"
+            const val COMPETING_IP_ADDRESS = "1.1.1.1"
+            val COUNTRY = CountryCode.from(COUNTRY_CODE)
         }
     }

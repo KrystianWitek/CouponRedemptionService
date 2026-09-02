@@ -51,6 +51,12 @@ internal class DefaultCouponRedemptionService(
         couponRepository.findByCode(code)
             ?: throw CouponNotFoundException(code)
 
+    private fun rejectExhaustedCoupon(coupon: Coupon) {
+        if (coupon.isExhausted) {
+            throw CouponUsageLimitReachedException(coupon.code)
+        }
+    }
+
     private fun validateCountry(
         couponCountry: CountryCode,
         requestCountry: CountryCode,
@@ -60,12 +66,6 @@ internal class DefaultCouponRedemptionService(
                 expectedCountry = couponCountry,
                 actualCountry = requestCountry,
             )
-        }
-    }
-
-    private fun rejectExhaustedCoupon(coupon: Coupon) {
-        if (coupon.isExhausted) {
-            throw CouponUsageLimitReachedException(coupon.code)
         }
     }
 
