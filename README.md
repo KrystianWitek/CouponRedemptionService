@@ -80,38 +80,7 @@ under `/api/v2` without breaking existing clients:
 - `POST /api/v1/coupons` — create a coupon
 - `POST /api/v1/coupons/redeem` — record a coupon redemption for a user
 
-Both endpoints answer with `201 Created` on success. Coupon codes are trimmed and upper-cased before
-they are stored or looked up, so `welcome10` and `WELCOME10` address the same coupon. The caller's
-country is resolved from the client IP address of the redemption request; no country is taken from
-the payload.
-
-Runnable requests together with their responses are described in [`http/README.md`](http/README.md).
-
-### Errors
-
-Failures return the same body for every case — `errorCode` for clients to branch on, `details` as a
-human-readable message, and `invalidFields` only for bean-validation failures:
-
-```json
-{
-  "errorCode": "VALIDATION_ERROR",
-  "details": "Request validation failed",
-  "invalidFields": ["countryCode", "maxUsageCount"]
-}
-```
-
-| Status | `errorCode`                  | Raised when                                                                       |
-|--------|------------------------------|---------------------------------------------------------------------------------|
-| 400    | `VALIDATION_ERROR`           | the request body fails bean validation; `invalidFields` lists the rejected fields |
-| 400    | `INVALID_COUNTRY_CODE`       | `countryCode` is not an ISO 3166-1 alpha-2 country                                |
-| 403    | `COUPON_COUNTRY_MISMATCH`    | the caller's country differs from the coupon country                              |
-| 404    | `COUPON_NOT_FOUND`           | no coupon exists for the given code                                               |
-| 409    | `COUPON_ALREADY_EXISTS`      | the coupon code is already taken                                                  |
-| 409    | `COUPON_ALREADY_REDEEMED`    | the user has already redeemed this coupon                                         |
-| 409    | `COUPON_USAGE_LIMIT_REACHED` | the coupon reached `maxUsageCount`                                                |
-| 503    | `GEO_IP_LOOKUP_FAILED`       | the country could not be resolved — provider error, timeout or excluded address   |
-
-### Trying it out
+Requests, responses and the error contract are described in [`http/README.md`](http/README.md).
 
 Interactive OpenAPI documentation is available while the application is running:
 

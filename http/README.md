@@ -1,17 +1,16 @@
-# HTTP requests
+# HTTP API
 
 [`coupons.http`](coupons.http) holds runnable requests for both endpoints. Open it in IntelliJ IDEA
 (HTTP Client) or in VS Code (REST Client) and run them against a locally started application. Two
 variables at the top of the file control where the requests go and which coupon they use:
 
-| Variable      | Default                 | Description                                  |
-|---------------|-------------------------|----------------------------------------------|
-| `@baseUrl`    | `http://localhost:8080` | Address of the running application            |
-| `@couponCode` | `WELCOME10`             | Coupon code shared by both requests           |
+| Variable      | Default                 | Description                         |
+|---------------|-------------------------|-------------------------------------|
+| `@baseUrl`    | `http://localhost:8080` | Address of the running application  |
+| `@couponCode` | `WELCOME10`             | Coupon code shared by both requests |
 
-Coupon codes are trimmed and upper-cased before they are stored or looked up, so `welcome10` and
-`WELCOME10` address the same coupon. Both endpoints answer with `201 Created` on success; the error
-contract is described in the [main README](../README.md#errors).
+Both endpoints answer with `201 Created` on success. Coupon codes are trimmed and upper-cased before
+they are stored or looked up, so `welcome10` and `WELCOME10` address the same coupon.
 
 ## Create a coupon
 
@@ -67,3 +66,27 @@ Run from the same machine as the application, this request answers `503 Service 
 `GEO_IP_LOOKUP_FAILED`: the public GeoIP provider cannot resolve local and private addresses.
 Repeating it for a `userId` that already redeemed the coupon answers `409 Conflict` with
 `COUPON_ALREADY_REDEEMED`.
+
+## Errors
+
+Failures return the same body for every case — `errorCode` for clients to branch on, `details` as a
+human-readable message, and `invalidFields` only for bean-validation failures:
+
+```json
+{
+  "errorCode": "VALIDATION_ERROR",
+  "details": "Request validation failed",
+  "invalidFields": ["countryCode", "maxUsageCount"]
+}
+```
+
+| Status | `errorCode`                  | Raised when                                                                       |
+|--------|------------------------------|---------------------------------------------------------------------------------|
+| 400    | `VALIDATION_ERROR`           | the request body fails bean validation; `invalidFields` lists the rejected fields |
+| 400    | `INVALID_COUNTRY_CODE`       | `countryCode` is not an ISO 3166-1 alpha-2 country                                |
+| 403    | `COUPON_COUNTRY_MISMATCH`    | the caller's country differs from the coupon country                              |
+| 404    | `COUPON_NOT_FOUND`           | no coupon exists for the given code                                               |
+| 409    | `COUPON_ALREADY_EXISTS`      | the coupon code is already taken                                                  |
+| 409    | `COUPON_ALREADY_REDEEMED`    | the user has already redeemed this coupon                                         |
+| 409    | `COUPON_USAGE_LIMIT_REACHED` | the coupon reached `maxUsageCount`                                                |
+| 503    | `GEO_IP_LOOKUP_FAILED`       | the country could not be resolved — provider error, timeout or excluded address   |
