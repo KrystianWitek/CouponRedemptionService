@@ -74,9 +74,12 @@ code collision a database decision, and `UNIQUE (coupon_id, user_id)` detects a 
    while the provider is down; `X-Forwarded-For` is ignored because without a trusted-proxy allow-list
    it would let any caller spoof its country ([ADR](docs/adr/2026-08-28-geoip-is-fail-closed.md)).
 4. **One feature slice, ports and adapters, beans wired by hand.** The dependency direction is
-   `api → application → domain ← infrastructure`, and JPA entities stay separate from the domain models
-   so the adapter can issue the native SQL that decision 1 rests on
-   ([ADR](docs/adr/2026-08-27-one-feature-slice-ports-and-adapters-manual-wiring.md)).
+   `api → application → domain ← infrastructure`. JPA entities are separate classes from the domain
+   models so the adapter can issue the native SQL that decision 1 rests on, which also means the whole
+   JPA stack serves a single derived query: it is kept because the mapped entities are what makes
+   `ddl-auto: validate` catch a migration that drifts from the code. Service implementations carry no
+   `@Service` and are wired by hand, so the application layer has no Spring annotations and can be
+   built with a plain constructor.
 
 ## Out of scope
 
