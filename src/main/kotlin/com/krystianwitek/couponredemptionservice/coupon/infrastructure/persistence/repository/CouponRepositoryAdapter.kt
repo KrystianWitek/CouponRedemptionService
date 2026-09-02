@@ -25,7 +25,6 @@ internal class CouponRepositoryAdapter(
             id = coupon.id.value,
             code = coupon.code.value,
             createdAt = coupon.createdAt,
-            updatedAt = coupon.createdAt,
             maxUsageCount = coupon.maxUsageCount,
             currentUsageCount = coupon.currentUsageCount,
             countryCode = coupon.country.value,
@@ -43,8 +42,8 @@ internal interface JpaCouponRepository : JpaRepository<CouponEntity, UUID> {
     @Modifying
     @Query(
         value = """
-            INSERT INTO coupon (id, code, created_at, updated_at, max_usage_count, current_usage_count, country_code)
-            VALUES (:id, :code, :createdAt, :updatedAt, :maxUsageCount, :currentUsageCount, :countryCode)
+            INSERT INTO coupon (id, code, created_at, max_usage_count, current_usage_count, country_code)
+            VALUES (:id, :code, :createdAt, :maxUsageCount, :currentUsageCount, :countryCode)
             ON CONFLICT (code) DO NOTHING
         """,
         nativeQuery = true,
@@ -53,7 +52,6 @@ internal interface JpaCouponRepository : JpaRepository<CouponEntity, UUID> {
         @Param("id") id: UUID,
         @Param("code") code: String,
         @Param("createdAt") createdAt: Instant,
-        @Param("updatedAt") updatedAt: Instant,
         @Param("maxUsageCount") maxUsageCount: Int,
         @Param("currentUsageCount") currentUsageCount: Int,
         @Param("countryCode") countryCode: String,
@@ -63,8 +61,7 @@ internal interface JpaCouponRepository : JpaRepository<CouponEntity, UUID> {
     @Query(
         value = """
             UPDATE coupon
-            SET current_usage_count = current_usage_count + 1,
-                updated_at = CURRENT_TIMESTAMP
+            SET current_usage_count = current_usage_count + 1
             WHERE id = :couponId
               AND current_usage_count < max_usage_count
         """,

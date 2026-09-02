@@ -1,7 +1,10 @@
 package com.krystianwitek.couponredemptionservice.coupon.application
 
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
+import com.krystianwitek.couponredemptionservice.coupon.domain.UserId
 
-class CouponAlreadyExistsException(
+data class RedeemCouponCommand(
     val code: CouponCode,
-) : RuntimeException("Coupon already exists: ${code.value}")
+    val userId: UserId,
+    val ipAddress: String,
+)

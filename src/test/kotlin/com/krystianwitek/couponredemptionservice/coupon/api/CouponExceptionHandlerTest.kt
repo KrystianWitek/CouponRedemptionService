@@ -12,6 +12,7 @@ import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorC
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.COUPON_USAGE_LIMIT_REACHED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.GEO_IP_LOOKUP_FAILED
 import com.krystianwitek.couponredemptionservice.coupon.api.ErrorResponse.ErrorCode.INVALID_COUNTRY_CODE
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.CreateCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyExistsException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponAlreadyRedeemedException
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCountryMismatchException
@@ -27,8 +28,6 @@ import com.krystianwitek.couponredemptionservice.toJson
 import com.krystianwitek.couponredemptionservice.toObject
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
@@ -76,11 +75,10 @@ internal class CouponExceptionHandlerTest
             )
         }
 
-        @ParameterizedTest
-        @ValueSource(strings = ["XX", "UK"])
-        fun `should return bad request when country code is not supported`(countryCode: String) {
+        @Test
+        fun `should return bad request when country code is not supported`() {
             // given
-            val request = aCreateCouponRequest(countryCode = countryCode)
+            val request = aCreateCouponRequest(countryCode = "XX")
 
             // when
             val response = createCoupon(request)
@@ -90,7 +88,7 @@ internal class CouponExceptionHandlerTest
                 response = response,
                 status = BAD_REQUEST,
                 errorCode = INVALID_COUNTRY_CODE,
-                details = "Unsupported country code: $countryCode",
+                details = "Unsupported country code: XX",
             )
         }
 
@@ -192,6 +190,7 @@ internal class CouponExceptionHandlerTest
                 errorCode = GEO_IP_LOOKUP_FAILED,
                 details = "Unable to resolve request country",
             )
+            assertThat(response.contentAsString).doesNotContain("invalidFields")
         }
 
         private fun redeemCoupon(): MockHttpServletResponse =

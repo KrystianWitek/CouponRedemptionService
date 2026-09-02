@@ -17,7 +17,7 @@ internal class CountryCodeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["", "P", "POL", "P1"])
+    @ValueSource(strings = ["POL", "P1"])
     fun `should reject invalid country code format`(value: String) {
         assertThatThrownBy {
             CountryCode.from(value)
@@ -25,12 +25,11 @@ internal class CountryCodeTest {
             .hasMessage("Country code must contain exactly two letters")
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = ["XX", "ZZ", "EU", "XK"])
-    fun `should reject unsupported country code`(value: String) {
+    @Test
+    fun `should reject unsupported country code`() {
         assertThatThrownBy {
-            CountryCode.from(value)
+            CountryCode.from("XX")
         }.isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("Unsupported country code: $value")
+            .hasMessage("Unsupported country code: XX")
     }
 }

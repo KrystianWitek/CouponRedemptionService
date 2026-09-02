@@ -5,6 +5,8 @@ import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponRequest
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.CouponRedemptionResponse
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.CouponResponse
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponCreationService
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponRedemptionService
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponId

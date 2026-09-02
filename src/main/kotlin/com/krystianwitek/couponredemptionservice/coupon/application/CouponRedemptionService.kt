@@ -19,12 +19,6 @@ interface CouponRedemptionService {
     fun redeem(command: RedeemCouponCommand): CouponRedemption
 }
 
-data class RedeemCouponCommand(
-    val code: CouponCode,
-    val userId: UserId,
-    val ipAddress: String,
-)
-
 internal class DefaultCouponRedemptionService(
     private val couponRepository: CouponRepository,
     private val couponRedemptionRepository: CouponRedemptionRepository,

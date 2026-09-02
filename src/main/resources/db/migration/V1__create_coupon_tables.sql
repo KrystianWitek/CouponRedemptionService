@@ -3,7 +3,6 @@ CREATE TABLE coupon
     id                  UUID PRIMARY KEY,
     code                VARCHAR(100)             NOT NULL UNIQUE,
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at          TIMESTAMP WITH TIME ZONE NOT NULL,
     max_usage_count     INTEGER                  NOT NULL,
     current_usage_count INTEGER                  NOT NULL,
     country_code        VARCHAR(2)               NOT NULL

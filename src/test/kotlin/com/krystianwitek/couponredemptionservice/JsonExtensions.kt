@@ -1,6 +1,6 @@
 package com.krystianwitek.couponredemptionservice
 
-import com.krystianwitek.couponredemptionservice.infrastructure.config.jsonMapper
+import com.krystianwitek.couponredemptionservice.config.jsonMapper
 
 fun Any.toJson(): String = jsonMapper.writeValueAsString(this)
 

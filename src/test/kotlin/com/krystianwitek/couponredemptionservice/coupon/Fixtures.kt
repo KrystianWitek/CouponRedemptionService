@@ -1,7 +1,7 @@
 package com.krystianwitek.couponredemptionservice.coupon
 
-import com.krystianwitek.couponredemptionservice.coupon.api.CreateCouponRequest
-import com.krystianwitek.couponredemptionservice.coupon.api.RedeemCouponRequest
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.CreateCouponRequest
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.RedeemCouponRequest
 import com.krystianwitek.couponredemptionservice.coupon.application.CreateCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.application.RedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode

@@ -4,6 +4,7 @@ import com.krystianwitek.couponredemptionservice.coupon.aCoupon
 import com.krystianwitek.couponredemptionservice.coupon.aCouponRedemption
 import com.krystianwitek.couponredemptionservice.coupon.aRedeemCouponCommand
 import com.krystianwitek.couponredemptionservice.coupon.domain.CountryCode
+import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpProvider
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.FakeTransactionOperations
 import com.krystianwitek.couponredemptionservice.coupon.infrastructure.InMemoryCouponRedemptionRepository
@@ -81,6 +82,38 @@ internal class DefaultCouponRedemptionServiceTest {
         assertThat(exception)
             .isInstanceOf(CouponCountryMismatchException::class.java)
             .hasMessage("Coupon is not valid for country: ${REQUEST_COUNTRY.value}")
+        assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isZero()
+        assertThat(couponRedemptionRepository.findAll()).isEmpty()
+    }
+
+    @Test
+    fun `should reject redemption when country lookup fails`() {
+        // given
+        val command = aRedeemCouponCommand()
+        val coupon = aCoupon(code = command.code, country = REQUEST_COUNTRY)
+        couponRepository.createIfAbsent(coupon)
+        val serviceWithFailingGeoIp =
+            DefaultCouponRedemptionService(
+                couponRepository = couponRepository,
+                couponRedemptionRepository = couponRedemptionRepository,
+                geoIpProvider =
+                    object : GeoIpProvider {
+                        override fun resolveCountry(ipAddress: String): CountryCode =
+                            throw GeoIpLookupException("GeoIP provider request failed")
+                    },
+                transactionOperations = FakeTransactionOperations(),
+            )
+
+        // when
+        val exception =
+            catchThrowable {
+                serviceWithFailingGeoIp.redeem(command)
+            }
+
+        // then
+        assertThat(exception)
+            .isInstanceOf(GeoIpLookupException::class.java)
+            .hasMessage("GeoIP provider request failed")
         assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isZero()
         assertThat(couponRedemptionRepository.findAll()).isEmpty()
     }

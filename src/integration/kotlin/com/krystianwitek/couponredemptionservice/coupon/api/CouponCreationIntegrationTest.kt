@@ -1,6 +1,7 @@
 package com.krystianwitek.couponredemptionservice.coupon.api
 
 import com.krystianwitek.couponredemptionservice.coupon.aCreateCouponRequest
+import com.krystianwitek.couponredemptionservice.coupon.api.dto.CouponResponse
 import com.krystianwitek.couponredemptionservice.coupon.domain.CouponCode
 import com.krystianwitek.couponredemptionservice.coupon.domain.repository.CouponRepository
 import com.krystianwitek.couponredemptionservice.infrastructure.IntegrationTest

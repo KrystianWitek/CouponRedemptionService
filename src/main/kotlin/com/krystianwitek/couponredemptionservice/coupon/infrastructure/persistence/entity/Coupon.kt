@@ -12,7 +12,6 @@ class Coupon(
     final val id: UUID = UUID.randomUUID(),
     val code: String,
     val createdAt: Instant = Instant.now(),
-    val updatedAt: Instant = createdAt,
     val maxUsageCount: Int,
     var currentUsageCount: Int = 0,
     val countryCode: String,

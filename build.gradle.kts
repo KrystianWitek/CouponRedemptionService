@@ -3,6 +3,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.jpa)
+    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.spring.boot)
@@ -41,6 +42,7 @@ configurations[integrationSourceSet.runtimeOnlyConfigurationName]
     .extendsFrom(configurations.testRuntimeOnly.get())
 
 dependencies {
+    kapt("org.springframework.boot:spring-boot-configuration-processor")
     implementation(libs.kotlin.logging)
     implementation(libs.logbook.spring.boot.starter)
     implementation(libs.micrometer.registry.prometheus)
@@ -63,6 +65,15 @@ dependencies {
     "integrationImplementation"("org.springframework.boot:spring-boot-starter-data-jpa-test")
     "integrationImplementation"(libs.spring.boot.testcontainers)
     "integrationImplementation"(libs.testcontainers.postgresql)
+}
+
+kapt {
+    arguments {
+        arg(
+            "org.springframework.boot.configurationprocessor.additionalMetadataLocations",
+            "$projectDir/src/main/resources",
+        )
+    }
 }
 
 kotlin {
