@@ -36,8 +36,9 @@ internal class DefaultCouponRedemptionService(
     override fun redeem(command: RedeemCouponCommand): CouponRedemption {
         log.debug { "Redeeming coupon started. [couponCode: ${command.code.value}]" }
         val coupon = findCoupon(command.code)
-        val requestCountry = geoIpProvider.resolveCountry(command.ipAddress)
+        rejectExhaustedCoupon(coupon)
 
+        val requestCountry = geoIpProvider.resolveCountry(command.ipAddress)
         validateCountry(coupon.country, requestCountry)
 
         val couponRedemption = redeemInTransaction(coupon, command.userId)
@@ -59,6 +60,12 @@ internal class DefaultCouponRedemptionService(
                 expectedCountry = couponCountry,
                 actualCountry = requestCountry,
             )
+        }
+    }
+
+    private fun rejectExhaustedCoupon(coupon: Coupon) {
+        if (coupon.isExhausted) {
+            throw CouponUsageLimitReachedException(coupon.code)
         }
     }
 

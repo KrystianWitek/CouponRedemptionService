@@ -43,6 +43,7 @@ internal class DefaultCouponRedemptionServiceTest {
         assertThat(result.redeemedAt).isBetween(beforeRedemption, Instant.now())
         assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
         assertThat(couponRedemptionRepository.findAll()).containsExactly(result)
+        assertThat(geoIpProvider.lookupCount).isEqualTo(1)
     }
 
     @Test
@@ -108,6 +109,8 @@ internal class DefaultCouponRedemptionServiceTest {
             .isInstanceOf(CouponUsageLimitReachedException::class.java)
             .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
         assertThat(couponRepository.findByCode(coupon.code)?.currentUsageCount).isEqualTo(1)
+        assertThat(couponRedemptionRepository.findAll()).isEmpty()
+        assertThat(geoIpProvider.lookupCount).isZero()
     }
 
     private companion object {
@@ -118,5 +121,11 @@ internal class DefaultCouponRedemptionServiceTest {
 private class FixedCountryGeoIpProvider(
     private val country: CountryCode,
 ) : GeoIpProvider {
-    override fun resolveCountry(ipAddress: String): CountryCode = country
+    var lookupCount = 0
+        private set
+
+    override fun resolveCountry(ipAddress: String): CountryCode {
+        lookupCount++
+        return country
+    }
 }

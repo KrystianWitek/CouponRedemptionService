@@ -18,6 +18,9 @@ data class Coupon(
             "Current usage count must not exceed maximum usage count"
         }
     }
+
+    val isExhausted: Boolean
+        get() = currentUsageCount >= maxUsageCount
 }
 
 @JvmInline
