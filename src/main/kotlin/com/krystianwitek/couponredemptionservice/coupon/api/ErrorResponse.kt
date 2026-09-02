@@ -2,10 +2,10 @@ package com.krystianwitek.couponredemptionservice.coupon.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
 
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class ErrorResponse(
     val errorCode: ErrorCode,
     val details: String,
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     val invalidFields: Set<String> = emptySet(),
 ) {
     enum class ErrorCode {

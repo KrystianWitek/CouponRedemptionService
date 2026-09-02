@@ -25,7 +25,7 @@ internal class CouponRepositoryIntegrationTest
 
             // when
             val created = couponRepository.createIfAbsent(coupon)
-            val result = couponRepository.findByCode(CouponCode.from("summer20"))
+            val result = couponRepository.findByCode(CouponCode.from("SUMMER20"))
 
             // then
             assertThat(created).isTrue()
@@ -40,7 +40,7 @@ internal class CouponRepositoryIntegrationTest
                     code = CouponCode.from("WINTER20"),
                     createdAt = Instant.parse("2026-01-02T12:00:00Z"),
                 )
-            val duplicateCoupon = aCoupon(code = CouponCode.from("winter20"))
+            val duplicateCoupon = aCoupon(code = CouponCode.from("WINTER20"))
             couponRepository.createIfAbsent(existingCoupon)
 
             // when

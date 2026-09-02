@@ -7,7 +7,7 @@ import tools.jackson.databind.json.JsonMapper
 import tools.jackson.module.kotlin.KotlinModule
 
 @Configuration
-class JacksonConfig {
+internal class JacksonConfig {
     @Bean
     @Primary
     fun jsonMapper(): JsonMapper = jsonMapper

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/v1/coupons")
 @Tag(name = "Coupons", description = "Discount coupon creation and redemption")
-class CouponController(
+internal class CouponController(
     private val couponCreationService: CouponCreationService,
     private val couponRedemptionService: CouponRedemptionService,
 ) {

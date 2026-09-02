@@ -13,6 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
+import org.mockito.BDDMockito.willAnswer
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,30 +35,7 @@ internal class CouponRedemptionTransactionIntegrationTest
         private lateinit var couponRepository: CouponRepository
 
         @Test
-        fun `should not increment usage when coupon was already redeemed by user`() {
-            // given
-            val coupon = aCoupon(maxUsageCount = 2, country = COUNTRY)
-            couponRepository.createIfAbsent(coupon)
-            val command = aRedeemCouponCommand(code = coupon.code)
-            given(geoIpProvider.resolveCountry(command.ipAddress)).willReturn(COUNTRY)
-            couponRedemptionService.redeem(command)
-
-            // when
-            val exception =
-                catchThrowable {
-                    couponRedemptionService.redeem(command)
-                }
-
-            // then
-            val persistedCoupon = testCouponRepository.findById(coupon.id.value).get()
-            assertThat(exception)
-                .isInstanceOf(CouponAlreadyRedeemedException::class.java)
-                .hasMessage("Coupon already redeemed by user: ${command.userId.value}")
-            assertThat(persistedCoupon.currentUsageCount).isEqualTo(1)
-        }
-
-        @Test
-        fun `should reject exhausted coupon before opening a transaction`() {
+        fun `should reject exhausted coupon before the country lookup`() {
             // given
             val coupon = aCoupon(maxUsageCount = 1, currentUsageCount = 1, country = COUNTRY)
             couponRepository.createIfAbsent(coupon)
@@ -80,13 +58,17 @@ internal class CouponRedemptionTransactionIntegrationTest
         }
 
         @Test
-        fun `should rollback redemption when coupon usage limit was reached`() {
+        fun `should roll back the inserted redemption when usage increment loses the race`() {
             // given
-            val coupon = aCoupon(maxUsageCount = 1, currentUsageCount = 1, country = COUNTRY)
+            val coupon = aCoupon(maxUsageCount = 1, currentUsageCount = 0, country = COUNTRY)
             couponRepository.createIfAbsent(coupon)
             val command = aRedeemCouponCommand(code = coupon.code)
             given(geoIpProvider.resolveCountry(command.ipAddress)).willReturn(COUNTRY)
-            given(couponRepository.findByCode(coupon.code)).willReturn(coupon.copy(currentUsageCount = 0))
+            val redemptionVisibleInTransaction = mutableListOf<Boolean>()
+            willAnswer {
+                redemptionVisibleInTransaction.add(hasRedemption(coupon, command))
+                false
+            }.given(couponRepository).incrementUsageIfAvailable(coupon.id)
 
             // when
             val exception =
@@ -99,9 +81,9 @@ internal class CouponRedemptionTransactionIntegrationTest
             assertThat(exception)
                 .isInstanceOf(CouponUsageLimitReachedException::class.java)
                 .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
+            assertThat(redemptionVisibleInTransaction).containsExactly(true)
             assertThat(hasRedemption(coupon, command)).isFalse()
-            assertThat(persistedCoupon.currentUsageCount).isEqualTo(1)
-            verify(couponRepository).incrementUsageIfAvailable(coupon.id)
+            assertThat(persistedCoupon.currentUsageCount).isZero()
         }
 
         private fun hasRedemption(

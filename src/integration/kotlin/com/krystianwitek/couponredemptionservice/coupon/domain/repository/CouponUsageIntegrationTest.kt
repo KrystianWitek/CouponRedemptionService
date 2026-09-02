@@ -66,6 +66,7 @@ internal class CouponUsageIntegrationTest
             val attempts = 20
             val coupon = aCoupon(maxUsageCount = usageLimit)
             couponRepository.createIfAbsent(coupon)
+            val ready = CountDownLatch(attempts)
             val start = CountDownLatch(1)
             val executor = Executors.newFixedThreadPool(attempts)
 
@@ -73,10 +74,12 @@ internal class CouponUsageIntegrationTest
                 val updates =
                     (1..attempts).map {
                         executor.submit<Boolean> {
+                            ready.countDown()
                             start.await()
                             couponRepository.incrementUsageIfAvailable(coupon.id)
                         }
                     }
+                check(ready.await(10, TimeUnit.SECONDS)) { "Workers did not reach the start gate in time" }
 
                 // when
                 start.countDown()

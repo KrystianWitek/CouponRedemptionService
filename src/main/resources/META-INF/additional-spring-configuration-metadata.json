@@ -1,0 +1,20 @@
+{
+  "properties": [
+    {
+      "name": "geo-ip.base-url",
+      "description": "Base URL of the GeoIP provider, for example https://ipwho.is."
+    },
+    {
+      "name": "geo-ip.connect-timeout",
+      "description": "Connect timeout of the GeoIP call, for example 2s."
+    },
+    {
+      "name": "geo-ip.read-timeout",
+      "description": "Read timeout of the GeoIP call, for example 2s."
+    },
+    {
+      "name": "geo-ip.excluded-addresses",
+      "description": "Addresses refused without calling the provider, for example 127.0.0.1,::1."
+    }
+  ]
+}
