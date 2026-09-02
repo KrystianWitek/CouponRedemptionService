@@ -141,13 +141,25 @@ inconclusive and `verify-s3.sh` settles it) and `coupon_unexpected` (must be zer
   these exit codes into CI as-is.
 - **`dropped_iterations` > 0** — the target arrival rate was not sustained. Usually that is the
   SUT saturating, but a generator sharing the host can also fall behind — cross-check with
-  `monitor.sh` (a saturated SUT shows busy threads / pending connections; an idle SUT with
-  drops points at the generator).
+  `monitor.sh` (a saturated SUT shows busy threads / threads waiting for a connection; an idle
+  SUT with drops points at the generator).
 - **`pg_lock_waits` climbing in S1** — requests queueing on the hot coupon row: the expected
   serialization ceiling (the row lock is acquired by the conditional UPDATE and held until the
   transaction commits).
-- **`hikari_pending` climbing in S2** — the 10-connection pool is the bottleneck; rerun with a
-  bigger pool (`-e SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=30` on the app service) to compare.
+- **`hikari_pending` climbing in S2** — does **not** on its own prove that the connection pool is
+  the bottleneck: `pending` counts *threads* waiting for a connection, so with 200 worker threads
+  and 10 connections it can climb towards ~190 whenever threads queue for the database step,
+  whatever is slowing the request as a whole. The pool is the limit only if `hikari_active` is
+  pinned at the maximum **and** `pool size / per-connection hold time` (Hikari `usage`) is close
+  to the delivered rate. Neither held in S2: no row contention, ~2.5 ms transactions, pool
+  capacity far above the delivered rate. The ceiling was application CPU (~80% of the two cores:
+  JSON, JPA, 200 context-switching threads, GC) and the pool-less GeoIP HTTP client, which opens
+  a fresh TCP connection for almost every lookup (the JDK keeps at most 5 keep-alive connections
+  per host) and exhausts the container's ephemeral ports (`TIME_WAIT`) — visible as bursts of
+  503 `GEO_IP_LOOKUP_FAILED` while the stub answers normally. Raising the pool to 30
+  (`SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=30` in the `app` service `environment:`) did not
+  improve throughput: ~12 connections were in use on average, and the freed threads only reached
+  the GeoIP client sooner, producing more 503s.
 - **`tomcat_busy` pinned at ~200 in S4** — 140 rps × ~1.5 s ≈ 210 in-flight requests exceed the
   200 worker threads: every thread waits on a slow-but-correct GeoIP while the database sits
   idle. Note what this does and does not motivate: a purely failure-based circuit breaker would
@@ -163,7 +175,10 @@ inconclusive and `verify-s3.sh` settles it) and `coupon_unexpected` (must be zer
   hot row (order of 300–2000 tps depending on fsync speed); excess load becomes latency, then
   drops. A bigger connection pool does NOT lift this ceiling.
 - 3000 rps spread over 1000 coupons (S2): bottleneck shifts to the connection pool; a bigger
-  pool should lift the ceiling here, unlike in S1.
+  pool should lift the ceiling here, unlike in S1. **Refuted.** Row contention disappears as
+  predicted, but the ceiling moves to application CPU and to the pool-less GeoIP HTTP client, not
+  to Hikari; a 30-connection pool delivered no more throughput than 10 (see "Reading the
+  results").
 - S3: exactly `LIMIT` successes regardless of load — anything else is a correctness bug
   (confirm with `verify-s3.sh`).
 
