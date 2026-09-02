@@ -81,55 +81,11 @@ under `/api/v2` without breaking existing clients:
 - `POST /api/v1/coupons/redeem` — record a coupon redemption for a user
 
 Both endpoints answer with `201 Created` on success. Coupon codes are trimmed and upper-cased before
-they are stored or looked up, so `welcome10` and `WELCOME10` address the same coupon.
-
-### Create a coupon
-
-```http
-POST /api/v1/coupons
-Content-Type: application/json
-
-{
-  "code": "WELCOME10",
-  "maxUsageCount": 100,
-  "countryCode": "PL"
-}
-```
-
-```json
-{
-  "id": "0f2b8f1e-6a5c-4f7b-9d3e-2c1a5b8e7d40",
-  "code": "WELCOME10",
-  "createdAt": "2026-09-02T10:15:30.123456Z",
-  "maxUsageCount": 100,
-  "currentUsageCount": 0,
-  "countryCode": "PL"
-}
-```
-
-### Redeem a coupon
-
-The caller's country is resolved from the client IP address of the request; no country is taken from
+they are stored or looked up, so `welcome10` and `WELCOME10` address the same coupon. The caller's
+country is resolved from the client IP address of the redemption request; no country is taken from
 the payload.
 
-```http
-POST /api/v1/coupons/redeem
-Content-Type: application/json
-
-{
-  "code": "WELCOME10",
-  "userId": "user-123"
-}
-```
-
-```json
-{
-  "id": "6d4c9a02-1f77-4a58-8f0b-9c3d21e4b5a6",
-  "code": "WELCOME10",
-  "userId": "user-123",
-  "redeemedAt": "2026-09-02T10:16:04.987654Z"
-}
-```
+Runnable requests together with their responses are described in [`http/README.md`](http/README.md).
 
 ### Errors
 
@@ -162,31 +118,7 @@ Interactive OpenAPI documentation is available while the application is running:
 - Swagger UI: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 - OpenAPI specification: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
-Runnable IntelliJ HTTP Client requests are available in [`http/coupons.http`](http/coupons.http).
-
 Coupon redemption resolves the caller's country through a public GeoIP provider. Local and private IP addresses cannot be resolved by that provider, so redemption requests made through localhost are expected to fail GeoIP resolution.
-
-## Redemption under concurrent load
-
-Loading the coupon, resolving the caller's country and comparing the two happen **outside** any
-transaction, so a slow GeoIP provider never holds a database transaction open. Only the two writes
-run inside one transaction, in this order:
-
-1. `INSERT INTO coupon_redemption ... ON CONFLICT (coupon_id, user_id) DO NOTHING` — the unique
-   constraint decides whether the user already redeemed the coupon, so no preceding `SELECT` can go
-   stale between the check and the write.
-2. `UPDATE coupon SET current_usage_count = current_usage_count + 1 WHERE id = ?
-   AND current_usage_count < max_usage_count` — the limit is evaluated by the database in the very
-   statement that consumes the use.
-
-Both statements report the number of affected rows, and zero rows means rejection
-(`COUPON_ALREADY_REDEEMED`, `COUPON_USAGE_LIMIT_REACHED`). Because the rejection is an exception
-raised inside the transaction, the redemption record is rolled back with it — a rejected attempt
-never consumes a use. Neither invariant is guarded by read-modify-write in application code; both
-live in SQL and in the constraints created by the Flyway migration.
-
-`CouponUsageIntegrationTest` (20 concurrent threads against a coupon with a limit of 5) and
-`CouponRedemptionConcurrencyIntegrationTest` verify this against a real PostgreSQL container.
 
 ## Local observability
 
