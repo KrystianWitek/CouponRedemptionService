@@ -53,13 +53,14 @@ internal class CouponRedemptionTransactionIntegrationTest
             assertThat(exception)
                 .isInstanceOf(CouponAlreadyRedeemedException::class.java)
                 .hasMessage("Coupon already redeemed by user: ${command.userId.value}")
-            assertThat(currentUsageCountOf(coupon)).isEqualTo(1)
+            assertThat(persistedCoupon(coupon).currentUsageCount).isEqualTo(1)
         }
 
         @Test
         fun `should reject exhausted coupon before opening a transaction`() {
             // given
-            val coupon = anExhaustedCoupon()
+            val coupon = aCoupon(maxUsageCount = 1, currentUsageCount = 1, country = COUNTRY)
+            couponRepository.createIfAbsent(coupon)
             val command = aRedeemCouponCommand(code = coupon.code)
 
             // when
@@ -73,17 +74,18 @@ internal class CouponRedemptionTransactionIntegrationTest
                 .isInstanceOf(CouponUsageLimitReachedException::class.java)
                 .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
             assertThat(hasRedemption(coupon, command)).isFalse()
-            assertThat(currentUsageCountOf(coupon)).isEqualTo(1)
+            assertThat(persistedCoupon(coupon).currentUsageCount).isEqualTo(1)
             verify(geoIpProvider, never()).resolveCountry(command.ipAddress)
         }
 
         @Test
         fun `should rollback redemption when coupon usage limit was reached`() {
             // given
-            val coupon = anExhaustedCoupon()
+            val coupon = aCoupon(maxUsageCount = 1, currentUsageCount = 1, country = COUNTRY)
+            couponRepository.createIfAbsent(coupon)
             val command = aRedeemCouponCommand(code = coupon.code)
             given(geoIpProvider.resolveCountry(command.ipAddress)).willReturn(COUNTRY)
-            givenServiceReadsCouponAsStillAvailable(coupon)
+            willReturn(coupon.copy(currentUsageCount = 0)).given(couponRepository).findByCode(coupon.code)
 
             // when
             val exception =
@@ -96,24 +98,11 @@ internal class CouponRedemptionTransactionIntegrationTest
                 .isInstanceOf(CouponUsageLimitReachedException::class.java)
                 .hasMessage("Coupon usage limit reached: ${coupon.code.value}")
             assertThat(hasRedemption(coupon, command)).isFalse()
-            assertThat(currentUsageCountOf(coupon)).isEqualTo(1)
+            assertThat(persistedCoupon(coupon).currentUsageCount).isEqualTo(1)
             verify(couponRepository).incrementUsageIfAvailable(coupon.id)
         }
 
-        private fun anExhaustedCoupon() =
-            aCoupon(
-                maxUsageCount = 1,
-                currentUsageCount = 1,
-                country = COUNTRY,
-            ).also(couponRepository::createIfAbsent)
-
-        private fun givenServiceReadsCouponAsStillAvailable(coupon: Coupon) {
-            willReturn(coupon.copy(currentUsageCount = 0))
-                .given(couponRepository)
-                .findByCode(coupon.code)
-        }
-
-        private fun currentUsageCountOf(coupon: Coupon) = testCouponRepository.findById(coupon.id.value).get().currentUsageCount
+        private fun persistedCoupon(coupon: Coupon) = testCouponRepository.findById(coupon.id.value).get()
 
         private fun hasRedemption(
             coupon: Coupon,
