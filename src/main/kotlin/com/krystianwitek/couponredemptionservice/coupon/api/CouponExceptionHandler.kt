@@ -15,6 +15,7 @@ import com.krystianwitek.couponredemptionservice.coupon.application.CouponNotFou
 import com.krystianwitek.couponredemptionservice.coupon.application.CouponUsageLimitReachedException
 import com.krystianwitek.couponredemptionservice.coupon.domain.geoip.GeoIpLookupException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.core.NestedExceptionUtils
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.CONFLICT
 import org.springframework.http.HttpStatus.FORBIDDEN
@@ -93,8 +94,8 @@ internal class CouponExceptionHandler {
     @ExceptionHandler(GeoIpLookupException::class)
     @ResponseStatus(SERVICE_UNAVAILABLE)
     fun handleGeoIpLookupFailure(exception: GeoIpLookupException): ErrorResponse {
-        val causeType = exception.cause?.javaClass?.simpleName ?: exception.javaClass.simpleName
-        log.warn { "GeoIP lookup failed. [causeType: $causeType]" }
+        val cause = NestedExceptionUtils.getMostSpecificCause(exception)
+        log.warn { "GeoIP lookup failed. [causeType: ${cause.javaClass.simpleName}, cause: ${cause.message}]" }
 
         return ErrorResponse(
             errorCode = GEO_IP_LOOKUP_FAILED,

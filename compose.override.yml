@@ -1,0 +1,45 @@
+# Local observability stack, merged automatically with compose.yml by `docker compose up`.
+# Run `docker compose -f compose.yml up` to start the application without it.
+services:
+  application:
+    environment:
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,prometheus
+      # Latency histogram buckets are required for the p50/p95/p99 dashboard panels.
+      MANAGEMENT_METRICS_DISTRIBUTION_PERCENTILESHISTOGRAM_HTTP_SERVER_REQUESTS: "true"
+      # Tomcat thread-pool metrics (tomcat_threads_*) are published only with the MBean registry on.
+      SERVER_TOMCAT_MBEANREGISTRY_ENABLED: "true"
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=1d
+      # Receiver for load-test tools pushing their client-side metrics (e.g. k6 remote write).
+      - --web.enable-remote-write-receiver
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+  grafana:
+    image: grafana/grafana-oss:12.1.1
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/coupon-redemption-service.json
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./observability/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  prometheus-data:
+  grafana-data:
