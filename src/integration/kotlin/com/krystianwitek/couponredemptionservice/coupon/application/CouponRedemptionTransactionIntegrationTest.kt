@@ -13,7 +13,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
-import org.mockito.BDDMockito.willReturn
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -87,7 +86,7 @@ internal class CouponRedemptionTransactionIntegrationTest
             couponRepository.createIfAbsent(coupon)
             val command = aRedeemCouponCommand(code = coupon.code)
             given(geoIpProvider.resolveCountry(command.ipAddress)).willReturn(COUNTRY)
-            willReturn(coupon.copy(currentUsageCount = 0)).given(couponRepository).findByCode(coupon.code)
+            given(couponRepository.findByCode(coupon.code)).willReturn(coupon.copy(currentUsageCount = 0))
 
             // when
             val exception =
