@@ -62,9 +62,10 @@ Content-Type: application/json
 }
 ```
 
-Run from the same machine as the application, this request answers `503 Service Unavailable` with
-`GEO_IP_LOOKUP_FAILED`: the public GeoIP provider cannot resolve local and private addresses.
-Repeating it for a `userId` that already redeemed the coupon answers `409 Conflict` with
+Run against a locally started application, this request answers `503 Service Unavailable` with
+`GEO_IP_LOOKUP_FAILED`: a local address cannot be geolocated, see the [project README](../README.md#quick-start).
+
+Repeating the request for a `userId` that already redeemed the coupon answers `409 Conflict` with
 `COUPON_ALREADY_REDEEMED`.
 
 ## Errors
