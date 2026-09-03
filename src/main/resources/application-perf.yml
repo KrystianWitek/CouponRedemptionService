@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    hikari:
+      # Pinned explicitly: the perf scenarios and their documented interpretations
+      # assume this pool size — do not rely on the Spring Boot default.
+      maximum-pool-size: 10
+
+logging:
+  level:
+    root: WARN
+    com.krystianwitek.couponredemptionservice: INFO
+
+logbook:
+  filter:
+    enabled: false
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+    threads:
+      # Pinned explicitly for the same reason as the connection pool above.
+      max: 200
+
+management:
+  server:
+    port: 9090
+  endpoints:
+    web:
+      exposure:
+        # metrics feeds monitor.sh, prometheus feeds the perf Prometheus (perf/prometheus).
+        include: health,metrics,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        # Latency histogram buckets are required for the p50/p95/p99 dashboard panels.
+        http.server.requests: true

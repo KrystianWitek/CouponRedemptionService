@@ -41,3 +41,6 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Performance tests ###
+perf-results/
