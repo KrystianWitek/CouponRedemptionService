@@ -23,6 +23,17 @@ The application listens on [http://localhost:8080](http://localhost:8080) with l
 readiness probes under [`/actuator/health`](http://localhost:8080/actuator/health).
 `docker compose down --volumes` stops it and drops the data.
 
+To connect from IntelliJ IDEA or DataGrip, add a PostgreSQL data source, select
+[**URL only**](https://www.jetbrains.com/help/idea/postgresql.html), paste this JDBC URL and click
+**Test Connection**. The URL includes the database name, username and password:
+
+```text
+jdbc:postgresql://localhost:5432/coupon_redemption_service?user=postgres&password=postgres
+```
+
+This uses the default port published by `compose.yml`. If you override it locally, run
+`docker compose port postgres 5432` and use the published port in the URL (for example, `5434`).
+
 Redemption cannot succeed from your own machine: loopback and Docker-gateway addresses are not
 geolocatable, so they answer `503 GEO_IP_LOOKUP_FAILED`.
 
