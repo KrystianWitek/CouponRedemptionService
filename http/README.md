@@ -1,11 +1,7 @@
 # HTTP API
 
-[`coupons.http`](coupons.http) holds runnable requests for both endpoints. From the project root,
-start the application with local GeoIP simulation:
-
-```bash
-docker compose up -d
-```
+[`coupons.http`](coupons.http) holds runnable requests for both endpoints.
+For application startup, see the [project README](../README.md#quick-start).
 
 Open the file in IntelliJ IDEA's HTTP Client and select **local** in **Run with**. Run
 **Create coupon**, then **Redeem coupon**, using the buttons next to the requests.
