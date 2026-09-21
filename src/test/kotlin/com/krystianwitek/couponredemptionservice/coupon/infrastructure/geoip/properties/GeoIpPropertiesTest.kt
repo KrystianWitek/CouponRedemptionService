@@ -1,5 +1,6 @@
 package com.krystianwitek.couponredemptionservice.coupon.infrastructure.geoip.properties
 
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -37,6 +38,38 @@ class GeoIpPropertiesTest {
             assertThat(properties.readTimeout).isEqualTo(Duration.ofSeconds(2))
             assertThat(properties.excludedAddresses)
                 .containsExactlyInAnyOrder("127.0.0.1", "::1")
+
+            with(properties.circuitBreaker) {
+                assertThat(slidingWindowType).isEqualTo(SlidingWindowType.COUNT_BASED)
+                assertThat(slidingWindowSize).isEqualTo(10)
+                assertThat(minimumNumberOfCalls).isEqualTo(5)
+                assertThat(failureRateThreshold).isEqualTo(50f)
+                assertThat(waitDurationInOpenState).isEqualTo(Duration.ofSeconds(10))
+                assertThat(permittedNumberOfCallsInHalfOpenState).isEqualTo(3)
+            }
+        }
+    }
+
+    @Test
+    fun `should bind circuit breaker override from properties`() {
+        // given
+        val contextRunner =
+            contextRunner.withPropertyValues(
+                "GEO_IP_BASE_URL=https://ipwho.is",
+                "GEO_IP_CONNECT_TIMEOUT=1s",
+                "GEO_IP_READ_TIMEOUT=2s",
+                "GEO_IP_EXCLUDED_ADDRESSES=127.0.0.1,::1",
+                "geo-ip.circuit-breaker.sliding-window-size=20",
+            )
+
+        // when
+        contextRunner.run { context ->
+            // then
+            assertThat(context).hasNotFailed()
+
+            val circuitBreaker = context.getBean(GeoIpProperties::class.java).circuitBreaker
+            assertThat(circuitBreaker.slidingWindowSize).isEqualTo(20)
+            assertThat(circuitBreaker.minimumNumberOfCalls).isEqualTo(5)
         }
     }
 

@@ -3,6 +3,7 @@ kotlin = "2.3.21"
 ktlint = "14.2.0"
 logbook = "4.1.0"
 kotlin-logging = "8.0.4"
+resilience4j = "2.4.0"
 spring-boot = "4.1.1"
 spring-dependency-management = "1.1.7"
 springdoc = "3.1.0"
@@ -12,6 +13,7 @@ wiremock = "3.13.2"
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
 logbook-spring-boot-starter = { module = "org.zalando:logbook-spring-boot-starter", version.ref = "logbook" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
+resilience4j-circuitbreaker = { module = "io.github.resilience4j:resilience4j-circuitbreaker", version.ref = "resilience4j" }
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 wiremock-standalone = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
