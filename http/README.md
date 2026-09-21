@@ -1,8 +1,10 @@
 # HTTP API
 
-[`coupons.http`](coupons.http) holds runnable requests for both endpoints. Start the application
-with `docker compose up --build`, open the file in IntelliJ IDEA's HTTP Client and select **local**
-in **Run with**. Run **Create coupon** using the button next to the request.
+[`coupons.http`](coupons.http) holds runnable requests for both endpoints.
+For application startup, see the [project README](../README.md#quick-start).
+
+Open the file in IntelliJ IDEA's HTTP Client and select **local** in **Run with**. Run
+**Create coupon**, then **Redeem coupon**, using the buttons next to the requests.
 
 The public [`http-client.env.json`](http-client.env.json) file provides the shared local configuration;
 no private environment file is needed:
@@ -65,8 +67,10 @@ Content-Type: application/json
 }
 ```
 
-Run against a locally started application, this request answers `503 Service Unavailable` with
-`GEO_IP_LOOKUP_FAILED`: a local address cannot be geolocated, see the [project README](../README.md#quick-start).
+The default local stack starts WireMock and returns `PL` for GeoIP, matching the sample coupon's
+country. With only `compose.yml`, the application uses the real provider and local redemption answers
+`503 Service Unavailable` with `GEO_IP_LOOKUP_FAILED` because a local address cannot be geolocated.
+See [local GeoIP simulation](../README.md#local-geoip-simulation).
 
 Repeating the request for a `userId` that already redeemed the coupon answers `409 Conflict` with
 `COUPON_ALREADY_REDEEMED`.

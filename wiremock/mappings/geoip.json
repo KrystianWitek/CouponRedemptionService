@@ -1,0 +1,22 @@
+{
+  "name": "Resolve client country to Poland",
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/[^/]+",
+    "queryParameters": {
+      "fields": {
+        "equalTo": "success,country_code,message"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "success": true,
+      "country_code": "PL"
+    }
+  }
+}
