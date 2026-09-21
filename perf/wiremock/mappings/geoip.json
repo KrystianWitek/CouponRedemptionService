@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/.*"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "success": true,
+      "country_code": "PL"
+    },
+    "fixedDelayMilliseconds": 20
+  }
+}
