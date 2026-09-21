@@ -4,7 +4,7 @@
 start the application with local GeoIP simulation:
 
 ```bash
-docker compose -f compose.yml -f compose.wiremock.yml up --build
+docker compose up -d
 ```
 
 Open the file in IntelliJ IDEA's HTTP Client and select **local** in **Run with**. Run
@@ -71,9 +71,10 @@ Content-Type: application/json
 }
 ```
 
-With `compose.wiremock.yml`, GeoIP returns `PL`, matching the sample coupon's country. Without this
-override, local redemption answers `503 Service Unavailable` with `GEO_IP_LOOKUP_FAILED` because a
-local address cannot be geolocated. See [local GeoIP simulation](../README.md#local-geoip-simulation).
+The default local stack starts WireMock and returns `PL` for GeoIP, matching the sample coupon's
+country. With only `compose.yml`, the application uses the real provider and local redemption answers
+`503 Service Unavailable` with `GEO_IP_LOOKUP_FAILED` because a local address cannot be geolocated.
+See [local GeoIP simulation](../README.md#local-geoip-simulation).
 
 Repeating the request for a `userId` that already redeemed the coupon answers `409 Conflict` with
 `COUPON_ALREADY_REDEEMED`.

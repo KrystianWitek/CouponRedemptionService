@@ -16,8 +16,11 @@ this coupon before.
 Requires Docker with Docker Compose; JDK 21 for the Gradle tasks.
 
 ```bash
-docker compose up --build
+docker compose up -d
 ```
+
+This starts the application, PostgreSQL, WireMock, Prometheus and Grafana. After changing application
+code, use `docker compose up -d --build` to rebuild its image.
 
 The application listens on [http://localhost:8080](http://localhost:8080) with liveness and
 readiness probes under [`/actuator/health`](http://localhost:8080/actuator/health).
@@ -34,26 +37,19 @@ jdbc:postgresql://localhost:5432/coupon_redemption_service?user=postgres&passwor
 This uses the default port published by `compose.yml`. If you override it locally, run
 `docker compose port postgres 5432` and use the published port in the URL (for example, `5434`).
 
-The default setup calls `ipwho.is`. Redemption from your own machine returns
-`503 GEO_IP_LOOKUP_FAILED` because loopback and Docker-gateway addresses cannot be geolocated.
-
 ### Local GeoIP simulation
 
-To create and redeem coupons locally, start the application with WireMock:
-
-```bash
-docker compose -f compose.yml -f compose.wiremock.yml up --build
-```
-
-This configuration sends GeoIP HTTP requests to WireMock and allows local addresses. The
-[`GeoIP mapping`](wiremock/mappings/geoip.json) returns `PL` for every lookup, so use a coupon with
+The automatically loaded `compose.override.yml` sends GeoIP HTTP requests to WireMock and allows
+local addresses. The [`GeoIP mapping`](wiremock/mappings/geoip.json) returns `PL` for every lookup,
+so use a coupon with
 `countryCode: "PL"`. Open [`http/coupons.http`](http/coupons.http), select **local** and run
 **Create coupon**, then **Redeem coupon**. Use a new coupon code if `WELCOME10` already exists;
 each user can redeem a coupon only once.
 
 WireMock's [request journal](http://localhost:8081/__admin/requests) shows the actual GeoIP calls.
-To also start Grafana and Prometheus, add `-f compose.override.yml` before `-f compose.wiremock.yml`.
-To return to the real GeoIP service, run `docker compose up --build --remove-orphans`.
+To use the real GeoIP service without the local tools, run
+`docker compose -f compose.yml up -d --remove-orphans`. Local redemption then returns
+`503 GEO_IP_LOOKUP_FAILED` because loopback and Docker-gateway addresses cannot be geolocated.
 
 ## API
 
@@ -66,6 +62,8 @@ is browsable as [Swagger UI](http://localhost:8080/swagger-ui.html) or
 
 Every setting comes from an environment variable. The `GEO_IP_*` variables have **no defaults**, so
 `./gradlew bootRun` needs them exported; `compose.yml` sets the values in the last column.
+The automatically loaded `compose.override.yml` overrides the GeoIP URL with `http://wiremock:8080`
+and clears excluded addresses for local testing.
 
 | Variable                    | Default                                                      | `compose.yml`                    | Description                                                             |
 |-----------------------------|--------------------------------------------------------------|----------------------------------|-------------------------------------------------------------------------|
