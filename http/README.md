@@ -1,13 +1,16 @@
 # HTTP API
 
-[`coupons.http`](coupons.http) holds runnable requests for both endpoints. Open it in IntelliJ IDEA
-(HTTP Client) or in VS Code (REST Client) and run them against a locally started application. Two
-variables at the top of the file control where the requests go and which coupon they use:
+[`coupons.http`](coupons.http) holds runnable requests for both endpoints. Start the application
+with `docker compose up --build`, open the file in IntelliJ IDEA's HTTP Client and select **local**
+in **Run with**. Run **Create coupon** using the button next to the request.
+
+The public [`http-client.env.json`](http-client.env.json) file provides the shared local configuration;
+no private environment file is needed:
 
 | Variable      | Default                 | Description                         |
 |---------------|-------------------------|-------------------------------------|
-| `@baseUrl`    | `http://localhost:8080` | Address of the running application  |
-| `@couponCode` | `WELCOME10`             | Coupon code shared by both requests |
+| `baseUrl`     | `http://localhost:8080` | Address of the running application  |
+| `couponCode`  | `WELCOME10`             | Coupon code shared by both requests |
 
 Both endpoints answer with `201 Created` on success. Coupon codes are trimmed and upper-cased before
 they are stored or looked up, so `welcome10` and `WELCOME10` address the same coupon.

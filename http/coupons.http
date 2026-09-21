@@ -1,6 +1,3 @@
-@baseUrl = http://localhost:8080
-@couponCode = WELCOME10
-
 ### Create coupon
 
 POST {{baseUrl}}/api/v1/coupons
