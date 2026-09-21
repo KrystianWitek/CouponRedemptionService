@@ -34,8 +34,26 @@ jdbc:postgresql://localhost:5432/coupon_redemption_service?user=postgres&passwor
 This uses the default port published by `compose.yml`. If you override it locally, run
 `docker compose port postgres 5432` and use the published port in the URL (for example, `5434`).
 
-Redemption cannot succeed from your own machine: loopback and Docker-gateway addresses are not
-geolocatable, so they answer `503 GEO_IP_LOOKUP_FAILED`.
+The default setup calls `ipwho.is`. Redemption from your own machine returns
+`503 GEO_IP_LOOKUP_FAILED` because loopback and Docker-gateway addresses cannot be geolocated.
+
+### Local GeoIP simulation
+
+To create and redeem coupons locally, start the application with WireMock:
+
+```bash
+docker compose -f compose.yml -f compose.wiremock.yml up --build
+```
+
+This configuration sends GeoIP HTTP requests to WireMock and allows local addresses. The
+[`GeoIP mapping`](wiremock/mappings/geoip.json) returns `PL` for every lookup, so use a coupon with
+`countryCode: "PL"`. Open [`http/coupons.http`](http/coupons.http), select **local** and run
+**Create coupon**, then **Redeem coupon**. Use a new coupon code if `WELCOME10` already exists;
+each user can redeem a coupon only once.
+
+WireMock's [request journal](http://localhost:8081/__admin/requests) shows the actual GeoIP calls.
+To also start Grafana and Prometheus, add `-f compose.override.yml` before `-f compose.wiremock.yml`.
+To return to the real GeoIP service, run `docker compose up --build --remove-orphans`.
 
 ## API
 
